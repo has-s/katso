@@ -5,9 +5,8 @@ app = Flask(__name__)
 
 CLIENT_ID = "5gu01uujpold2a2nf3bdjpf0erifzn"
 CLIENT_SECRET = ("beaty65di005fmryt8fhhygmdizhtq")
-REDIRECT_URI = "http://katso.vercel.app/callback"
+REDIRECT_URI = "localhost:3000"
 
-# Маршрут для перенаправления на страницу авторизации Twitch
 @app.route("/authorize")
 def authorize():
     # Формирование URL для запроса авторизации
