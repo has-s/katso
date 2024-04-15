@@ -1,7 +1,7 @@
-from flask import Flask, redirect, request
+from flask import Flask, redirect, request, render_template
 import requests
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder="/Users/hass/Documents/Code/katso/templates")  # Укажите путь к вашей папке с шаблонами
 
 def authenticate_oauth(client_id, client_secret):
     token_url = "https://id.twitch.tv/oauth2/token"
@@ -31,15 +31,16 @@ def get_user_info(access_token, username):
 
 @app.route('/')
 def index():
-    return "Katso."
+    return render_template("index.html")
 
-@app.route('/get_token')
+@app.route('/get_token', methods=['POST'])
 def get_token():
     client_id = "5gu01uujpold2a2nf3bdjpf0erifzn"
     client_secret = "beaty65di005fmryt8fhhygmdizhtq"
     access_token = authenticate_oauth(client_id, client_secret)
     if access_token:
-        return redirect(f"/user_info?access_token={access_token}&username=Olesha")
+        username = request.form.get('username')
+        return redirect(f"/user_info?access_token={access_token}&username={username}")
     else:
         return "Не удалось получить Bearer токен доступа."
 
@@ -49,7 +50,7 @@ def user_info():
     username = request.args.get('username')
     user_info = get_user_info(access_token, username)
     if user_info:
-        return f"Информация о пользователе: {user_info}"
+        return render_template('user_info.html', user_info=user_info)
     else:
         return "Не удалось получить информацию о пользователе."
 

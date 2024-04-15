@@ -6,9 +6,11 @@
     <title>Информация о пользователе</title>
 </head>
 <body>
-    <h2>Информация о пользователе Twitch</h2>
-    <p>Имя пользователя: {{ user_info.display_name }}</p>
+    <h1>Информация о пользователе</h1>
+    <p>Имя пользователя: {{ user_info.login }}</p>
     <p>Тип стримера: {{ user_info.broadcaster_type }}</p>
-    <!-- Другие данные о пользователе можно выводить здесь -->
+    <p>Описание: {{ user_info.description }}</p>
+    <p>Количество просмотров (устарело) : {{ user_info.view_count }}</p>
+    <img src="{{ user_info.profile_image_url }}" alt="Profile Image">
 </body>
 </html>
