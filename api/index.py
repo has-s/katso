@@ -17,6 +17,18 @@ def authenticate_oauth(client_id, client_secret):
             return data['access_token']
     return None
 
+def get_user_info(access_token, username):
+    url = f"https://api.twitch.tv/helix/users?login={username}"
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Client-ID": "5gu01uujpold2a2nf3bdjpf0erifzn"  # Замените на свой идентификатор клиента
+    }
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        data = response.json()
+        return data['data'][0] if 'data' in data and len(data['data']) > 0 else None
+    return None
+
 @app.route('/')
 def index():
     return "Katso."
@@ -27,14 +39,19 @@ def get_token():
     client_secret = "beaty65di005fmryt8fhhygmdizhtq"
     access_token = authenticate_oauth(client_id, client_secret)
     if access_token:
-        return redirect(f"/token?access_token={access_token}")
+        return redirect(f"/user_info?access_token={access_token}&username=Olesha")
     else:
         return "Не удалось получить Bearer токен доступа."
 
-@app.route('/token')
-def token():
+@app.route('/user_info')
+def user_info():
     access_token = request.args.get('access_token')
-    return f"Bearer токен доступа: {access_token}"
+    username = request.args.get('username')
+    user_info = get_user_info(access_token, username)
+    if user_info:
+        return f"Информация о пользователе: {user_info}"
+    else:
+        return "Не удалось получить информацию о пользователе."
 
 if __name__ == "__main__":
     app.run(debug=True)
