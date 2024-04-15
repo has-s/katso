@@ -3,41 +3,38 @@ import requests
 
 app = Flask(__name__)
 
-CLIENT_ID = "5gu01uujpold2a2nf3bdjpf0erifzn"
-CLIENT_SECRET = ("beaty65di005fmryt8fhhygmdizhtq")
-REDIRECT_URI = "localhost:3000"
-
-@app.route("/authorize")
-def authorize():
-    # Формирование URL для запроса авторизации
-    auth_url = f"https://id.twitch.tv/oauth2/authorize?client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&response_type=code&scope=viewing_activity_read"
-
-    return redirect(auth_url)
-
-# Маршрут для обработки ответа от Twitch после авторизации
-@app.route("/callback")
-def callback():
-    # Получение кода авторизации из параметра запроса
-    code = request.args.get("code")
-
-    # Обмен кода авторизации на токен доступа
+def authenticate_oauth(client_id, client_secret):
     token_url = "https://id.twitch.tv/oauth2/token"
     params = {
-        "client_id": CLIENT_ID,
-        "client_secret": CLIENT_SECRET,
-        "code": code,
-        "grant_type": "authorization_code",
-        "redirect_uri": REDIRECT_URI
+        "client_id": client_id,
+        "client_secret": client_secret,
+        "grant_type": "client_credentials"
     }
     response = requests.post(token_url, data=params)
-    data = response.json()
+    if response.status_code == 200:
+        data = response.json()
+        if 'access_token' in data:
+            return data['access_token']
+    return None
 
-    # Получение токена доступа из ответа
-    access_token = data.get("access_token")
+@app.route('/')
+def index():
+    return "Katso."
 
-    # Теперь вы можете использовать access_token для вызова методов Twitch API
+@app.route('/get_token')
+def get_token():
+    client_id = "5gu01uujpold2a2nf3bdjpf0erifzn"
+    client_secret = "beaty65di005fmryt8fhhygmdizhtq"
+    access_token = authenticate_oauth(client_id, client_secret)
+    if access_token:
+        return redirect(f"/token?access_token={access_token}")
+    else:
+        return "Не удалось получить Bearer токен доступа."
 
-    return "Authorization successful! You can now use this token to call Twitch API."
+@app.route('/token')
+def token():
+    access_token = request.args.get('access_token')
+    return f"Bearer токен доступа: {access_token}"
 
 if __name__ == "__main__":
     app.run(debug=True)
