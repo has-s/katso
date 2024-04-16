@@ -1,8 +1,13 @@
 from flask import Flask, render_template, request
 import requests
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+client_id = os.getenv("CLIENT_ID")
+client_secret = os.getenv("CLIENT_SECRET")
 
 app = Flask(__name__, template_folder="/Users/hass/Documents/Code/katso/templates")
-
 def authenticate_oauth(client_id, client_secret):
     token_url = "https://id.twitch.tv/oauth2/token"
     params = {
@@ -21,7 +26,7 @@ def get_user_info(access_token, username):
     url = f"https://api.twitch.tv/helix/users?login={username}"
     headers = {
         "Authorization": f"Bearer {access_token}",
-        "Client-ID": "5gu01uujpold2a2nf3bdjpf0erifzn"  # Замените на свой идентификатор клиента
+        "Client-ID": client_id
     }
     response = requests.get(url, headers=headers)
     if response.status_code == 200:
@@ -33,7 +38,7 @@ def get_stream_info(access_token, username):
     url = f"https://api.twitch.tv/helix/streams?user_login={username}"
     headers = {
         "Authorization": f"Bearer {access_token}",
-        "Client-ID": "5gu01uujpold2a2nf3bdjpf0erifzn"  # Замените на свой идентификатор клиента
+        "Client-ID": client_id
     }
     response = requests.get(url, headers=headers)
     if response.status_code == 200:
@@ -47,8 +52,6 @@ def index():
 
 @app.route('/get_info', methods=['POST'])
 def get_info():
-    client_id = "5gu01uujpold2a2nf3bdjpf0erifzn"
-    client_secret = "beaty65di005fmryt8fhhygmdizhtq"
     access_token = authenticate_oauth(client_id, client_secret)
     if access_token:
         username = request.form.get('username')
