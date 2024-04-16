@@ -9,17 +9,17 @@
 
     <h2>Информация о пользователе Twitch</h2>
     {% if user_info %}
-<p>Имя пользователя: {{ user_info.login }}</p>
-<p>Отображаемое имя: {{ user_info.display_name }}</p>
-<p>Тип пользователя: {{ user_info.type }}</p>
-<p>Тип вещателя: {{ user_info.broadcaster_type }}</p>
-<p>Описание: {{ user_info.description }}</p>
-<p>URL изображения профиля: <img src="{{ user_info.profile_image_url }}" alt="Profile Image"></p>
-<p>URL изображения в оффлайне: <img src="{{ user_info.offline_image_url }}" alt="Offline Image"></p>
-<p>Количество просмотров (устарело): {{ user_info.view_count }}</p>
-<p>Дата создания аккаунта: {{ user_info.created_at }}</p>
+        <p>Имя пользователя: {{ user_info.login }}</p>
+        <p>Отображаемое имя: {{ user_info.display_name }}</p>
+        <p>Тип пользователя: {{ user_info.type }}</p>
+        <p>Тип вещателя: {{ user_info.broadcaster_type }}</p>
+        <p>Описание: {{ user_info.description }}</p>
+        <p>URL изображения профиля: <img src="{{ user_info.profile_image_url }}" alt="Profile Image"></p>
+        <p>URL изображения в оффлайне: <img src="{{ user_info.offline_image_url }}" alt="Offline Image"></p>
+        <p>Количество просмотров (устарело): {{ user_info.view_count }}</p>
+        <p>Дата создания аккаунта: {{ user_info.created_at }}</p>
     {% else %}
-    <p>Не удалось получить информацию о пользователе.</p>
+        <p>Не удалось получить информацию о пользователе.</p>
     {% endif %}
 
 
@@ -36,14 +36,43 @@
         {% for tag in stream_info.tag_ids %}
             {{ tag }}{% if not loop.last %}, {% endif %}
         {% endfor %}
-    </p>
-    <p>Превью: <img src="{{ stream_info.thumbnail_url | replace('{width}', '1920') | replace('{height}', '1080') }}" alt="Thumbnail"></p>
-    <p>Текущая игра: {{ stream_info.game_name }}</p>
-    <p>Имя стримера: {{ stream_info.user_name }}</p>
-{% else %}
-    <p>Стрим активен: Нет</p>
-{% endif %}
+        </p>
+        <p>Превью: <img src="{{ stream_info.thumbnail_url | replace('{width}', '1920') | replace('{height}', '1080') }}" alt="Thumbnail"></p>
+        <p>Текущая игра: {{ stream_info.game_name }}</p>
+        <p>Имя стримера: {{ stream_info.user_name }}</p>
+    {% else %}
+        <p>Стрим активен: Нет</p>
+    {% endif %}
 
-
+<h2>Предыдущие стримы</h2>
+    <ul>
+        {% if past_streams %}
+            {% for stream in past_streams %}
+                <li>
+                    <strong>Название:</strong> {{ stream.title }}<br>
+                    <strong>ID:</strong> {{ stream.id }}<br>
+                    <strong>User ID:</strong> {{ stream.user_id }}<br>
+                    <strong>URL:</strong> <a href="{{ stream.url }}">{{ stream.url }}</a><br>
+                    <strong>Дата создания:</strong> {{ stream.created_at }}<br>
+                    <strong>Длительность:</strong> {{ stream.duration }}<br>
+                    <strong>Язык:</strong> {{ stream.language }}<br>
+                    <strong>Теги:</strong>
+                    <ul>
+                        {% for tag in stream.tag_ids %}
+                            <li>{{ tag }}</li>
+                        {% endfor %}
+                    </ul>
+                    <strong>Превью:</strong> <img src="{{ stream.thumbnail_url | replace('%{width}', '1920') | replace('%{height}', '1080') }}" alt="Preview"><br>
+                    <strong>Количество просмотров:</strong> {{ stream.view_count }}<br>
+                    <strong>Количество комментариев:</strong> {{ stream.comment_count }}<br>
+                    <strong>Количество лайков:</strong> {{ stream.like_count }}<br>
+                    <strong>Количество дизлайков:</strong> {{ stream.dislike_count }}<br>
+                    <strong>Количество фолловеров:</strong> {{ stream.follower_count }}<br>
+                </li>
+            {% endfor %}
+        {% else %}
+            <li>Нет доступных предыдущих стримов.</li>
+        {% endif %}
+    </ul>
 </body>
 </html>

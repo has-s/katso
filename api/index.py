@@ -46,6 +46,17 @@ def get_stream_info(access_token, username):
         data = response.json()
         return data['data'][0] if 'data' in data and len(data['data']) > 0 else None
     return None
+def get_past_streams(access_token, user_id, limit=10):
+    url = f"https://api.twitch.tv/helix/videos?user_id={user_id}&type=archive&first={limit}"
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Client-ID": client_id
+    }
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        data = response.json()
+        return data['data'] if 'data' in data else None
+    return None
 
 @app.route('/')
 def index():
@@ -57,8 +68,9 @@ def get_info():
     if access_token:
         username = request.form.get('username')
         user_info = get_user_info(access_token, username)
-        stream_info = get_stream_info(access_token, username)
-        return render_template('user_info.html', user_info=user_info, stream_info=stream_info)
+        stream_info = get_stream_info(access_token, user_info['id'])
+        past_streams = get_past_streams(access_token, user_info['id'])
+        return render_template('user_info.html', user_info=user_info, stream_info=stream_info, past_streams=past_streams)
     else:
         return "Не удалось получить Bearer токен доступа."
 
