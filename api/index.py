@@ -63,4 +63,4 @@ def get_info():
         return "Не удалось получить Bearer токен доступа."
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()
