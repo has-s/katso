@@ -4,6 +4,6 @@
     { "src": "api/**/*.py", "use": "@vercel/python" }
   ],
   "routes": [
-    { "handle": "filesystem" , "src": "/templates/(.*)" , "dest": "templates/$1" }
+    { "src": "templates/(.*)" , "dest": "templates/$1" }
   ]
 }
