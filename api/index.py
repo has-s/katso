@@ -9,7 +9,7 @@ client_secret = os.getenv("CLIENT_SECRET")
 template_path = os.getenv("TEMPLATE_PATH")
 
 
-app = Flask(__name__, template_folder="")
+app = Flask(__name__, template_folder=template_path)
 def authenticate_oauth(client_id, client_secret):
     token_url = "https://id.twitch.tv/oauth2/token"
     params = {
