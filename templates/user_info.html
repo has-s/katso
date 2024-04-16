@@ -3,14 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Информация о пользователе</title>
+    <title>Информация о пользователе Twitch</title>
 </head>
 <body>
-    <h1>Информация о пользователе</h1>
-    <p>Имя пользователя: {{ user_info.login }}</p>
-    <p>Тип стримера: {{ user_info.broadcaster_type }}</p>
-    <p>Описание: {{ user_info.description }}</p>
-    <p>Количество просмотров (устарело) : {{ user_info.view_count }}</p>
-    <img src="{{ user_info.profile_image_url }}" alt="Profile Image">
+    <h1>Информация о пользователе Twitch</h1>
+    {% if user_info %}
+        <h2>Основная информация:</h2>
+        <ul>
+            <li>ID: {{ user_info.id }}</li>
+            <li>Логин: {{ user_info.login }}</li>
+            <li>Отображаемое имя: {{ user_info.display_name }}</li>
+            <!-- Добавим другие поля, если нужно -->
+        </ul>
+    {% else %}
+        <p>Не удалось получить информацию о пользователе.</p>
+    {% endif %}
+    {% if stream_info %}
+        <h2>Информация о стриме:</h2>
+        <ul>
+            <li>Название стрима: {{ stream_info.title }}</li>
+            <li>Название игры: {{ stream_info.game_name }}</li>
+            <li>Количество зрителей: {{ stream_info.viewer_count }}</li>
+            <!-- Добавим другие поля, если нужно -->
+        </ul>
+    {% else %}
+        <p>Стример сейчас не в сети.</p>
+    {% endif %}
 </body>
 </html>
