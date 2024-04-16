@@ -7,7 +7,7 @@ load_dotenv()
 client_id = os.getenv("CLIENT_ID")
 client_secret = os.getenv("CLIENT_SECRET")
 
-app = Flask(__name__, template_folder="/Users/hass/Documents/Code/katso/templates")
+app = Flask(__name__, template_folder="https://github.com/has-s/katso/blob/3d7529d7a16831cd9d701305b77351ebf49707fe/templates")
 def authenticate_oauth(client_id, client_secret):
     token_url = "https://id.twitch.tv/oauth2/token"
     params = {
