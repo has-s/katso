@@ -1,7 +1,7 @@
-from flask import Flask, redirect, request, render_template
+from flask import Flask, render_template, request
 import requests
 
-app = Flask(__name__, template_folder="/Users/hass/Documents/Code/katso/templates")  # Укажите путь к вашей папке с шаблонами
+app = Flask(__name__, template_folder="/Users/hass/Documents/Code/katso/templates")
 
 def authenticate_oauth(client_id, client_secret):
     token_url = "https://id.twitch.tv/oauth2/token"
@@ -45,27 +45,18 @@ def get_stream_info(access_token, username):
 def index():
     return render_template("index.html")
 
-@app.route('/get_token', methods=['POST'])
-def get_token():
+@app.route('/get_info', methods=['POST'])
+def get_info():
     client_id = "5gu01uujpold2a2nf3bdjpf0erifzn"
     client_secret = "beaty65di005fmryt8fhhygmdizhtq"
     access_token = authenticate_oauth(client_id, client_secret)
     if access_token:
         username = request.form.get('username')
-        return redirect(f"/user_info?access_token={access_token}&username={username}")
-    else:
-        return "Не удалось получить Bearer токен доступа."
-
-@app.route('/user_info')
-def user_info():
-    access_token = request.args.get('access_token')
-    username = request.args.get('username')
-    user_info = get_user_info(access_token, username)
-    stream_info = get_stream_info(access_token, username)
-    if user_info:
+        user_info = get_user_info(access_token, username)
+        stream_info = get_stream_info(access_token, username)
         return render_template('user_info.html', user_info=user_info, stream_info=stream_info)
     else:
-        return "Не удалось получить информацию о пользователе."
+        return "Не удалось получить Bearer токен доступа."
 
 if __name__ == "__main__":
     app.run(debug=True)
