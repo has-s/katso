@@ -8,6 +8,8 @@ client_id = os.getenv("CLIENT_ID")
 client_secret = os.getenv("CLIENT_SECRET")
 template_path = os.getenv("TEMPLATE_PATH")
 
+project_root = os.path.dirname(__file__)
+template_path = os.path.join(project_root, './')
 
 app = Flask(__name__, template_folder=template_path)
 def authenticate_oauth(client_id, client_secret):
