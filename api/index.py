@@ -6,11 +6,11 @@ import os
 load_dotenv()
 client_id = os.getenv("CLIENT_ID")
 client_secret = os.getenv("CLIENT_SECRET")
-template_path = os.getenv("TEMPLATE_PATH")
+#template_path = os.getenv("TEMPLATE_PATH")
 
 project_root = os.path.dirname(__file__)
-template_path = os.path.join(project_root, './')
-
+template_path = os.path.join(project_root, '../templates/')
+print(template_path)
 app = Flask(__name__, template_folder=template_path)
 def authenticate_oauth(client_id, client_secret):
     token_url = "https://id.twitch.tv/oauth2/token"
