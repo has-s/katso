@@ -59,6 +59,22 @@ def get_past_streams(access_token, user_id, limit=10):
         return data['data'] if 'data' in data else None
     return None
 
+def get_access_token(code):
+    token_url = "https://id.twitch.tv/oauth2/token"
+    params = {
+        "client_id": client_id,
+        "client_secret": client_secret,
+        "code": code,
+        "grant_type": "authorization_code",
+        "redirect_uri": redirect_uri
+    }
+    response = requests.post(token_url, data=params)
+    if response.status_code == 200:
+        data = response.json()
+        if 'access_token' in data:
+            return data['access_token']
+    return None
+
 # Эндпоинт для авторизации
 @app.route('/authorize')
 def authorize():
@@ -105,7 +121,7 @@ def chat_messages():
         if response.status_code == 200:
             messages = response.json()['data']
             return render_template('chat_messages.html', messages=messages)
-    return "Ошибка при получении сообщений чата."
+    return "Ошибка при получении сообщений чата"
 
 
 @app.route('/')
