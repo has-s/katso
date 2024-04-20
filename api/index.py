@@ -143,7 +143,7 @@ def get_info():
         else:
             return "Пользователь не найден"
     else:
-        return "Не удалось получить Bearer токен доступа."
+        return "Не удалось получить Bearer токен доступа. "
 
 if __name__ == "__main__":
     app.run()
