@@ -33,6 +33,7 @@
     <p>Зрители: {{ stream_info.viewer_count }}</p>
     <p>Язык стрима: {{ stream_info.language }}</p>
     <p>Теги стрима:
+    <!-- make tags -->
         {% for tag in stream_info.tag_ids %}
             {{ tag }}{% if not loop.last %}, {% endif %}
         {% endfor %}
@@ -64,10 +65,10 @@
                     </ul>
                     <strong>Превью:</strong> <img src="{{ stream.thumbnail_url | replace('%{width}', '1920') | replace('%{height}', '1080') }}" alt="Preview"><br>
                     <strong>Количество просмотров:</strong> {{ stream.view_count }}<br>
-                    <strong>Количество комментариев:</strong> {{ stream.comment_count }}<br>
-                    <strong>Количество лайков:</strong> {{ stream.like_count }}<br>
-                    <strong>Количество дизлайков:</strong> {{ stream.dislike_count }}<br>
-                    <strong>Количество фолловеров:</strong> {{ stream.follower_count }}<br>
+                    <strong>Количество комментариев (???):</strong> {{ stream.comment_count }}<br>
+                    <strong>Количество лайков (???):</strong> {{ stream.like_count }}<br>
+                    <strong>Количество дизлайков (???):</strong> {{ stream.dislike_count }}<br>
+                    <strong>Количество фолловеров (???):</strong> {{ stream.follower_count }}<br>
                 </li>
             {% endfor %}
         {% else %}

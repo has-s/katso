@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
 import requests
 from dotenv import load_dotenv
 import os
@@ -7,6 +7,7 @@ load_dotenv()
 client_id = os.getenv("CLIENT_ID")
 client_secret = os.getenv("CLIENT_SECRET")
 template_path = os.getenv("TEMPLATE_PATH")
+redirect_uri = os.getenv("REDIRECT_URI")
 
 app = Flask(__name__, template_folder=template_path)
 def authenticate_oauth(client_id, client_secret):
@@ -57,6 +58,55 @@ def get_past_streams(access_token, user_id, limit=10):
         data = response.json()
         return data['data'] if 'data' in data else None
     return None
+
+# Эндпоинт для авторизации
+@app.route('/authorize')
+def authorize():
+    authorize_url = f"https://id.twitch.tv/oauth2/authorize?client_id={client_id}&redirect_uri={redirect_uri}&response_type=code&scope=chat:read"
+    return redirect(authorize_url)
+
+# Эндпоинт для обработки редиректа после авторизации
+@app.route('/callback')
+def callback():
+    code = request.args.get('code')
+    if code:
+        access_token = get_access_token(code)
+        if access_token:
+            return redirect(url_for('chat_messages', access_token=access_token))
+    return "Ошибка при получении токена доступа."
+
+# Функция для получения токена доступа по коду авторизации
+def get_access_token(code):
+    token_url = "https://id.twitch.tv/oauth2/token"
+    params = {
+        "client_id": client_id,
+        "client_secret": client_secret,
+        "code": code,
+        "grant_type": "authorization_code",
+        "redirect_uri": redirect_uri
+    }
+    response = requests.post(token_url, data=params)
+    if response.status_code == 200:
+        data = response.json()
+        if 'access_token' in data:
+            return data['access_token']
+    return None
+
+# Эндпоинт для получения сообщений чата
+@app.route('/chat/messages')
+def chat_messages():
+    access_token = request.args.get('access_token')
+    if access_token:
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Client-ID": client_id
+        }
+        response = requests.get("https://api.twitch.tv/helix/chat/recent", headers=headers)
+        if response.status_code == 200:
+            messages = response.json()['data']
+            return render_template('chat_messages.html', messages=messages)
+    return "Ошибка при получении сообщений чата."
+
 
 @app.route('/')
 def index():
