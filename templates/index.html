@@ -1,16 +1,34 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Введите ник пользователя Twitch</title>
+    <title>Katso</title>
+    <link rel="stylesheet" href="../static/less/styles.less">
 </head>
 <body>
-    <h1>Введите ник пользователя Twitch</h1>
+
+    <div class="theme-switcher">
+        <label class="switch">
+            <input type="checkbox" id="theme-toggle">
+            <span class="slider round"></span>
+        </label>
+    </div>
+
+    <h1>пока шо не работаит, ждити</h1>
+    <p>Katso - с фин. смотреть, наблюдать </p>
+    <p>Предоставляет аналитику IRC чата и позволяет искать закономерности
+    реакций аудитории чата по ключевым словам, смайлам, категориям и другое.
+    </p>
+
+    <h3>Узнать про пользователя:</h3>
     <form action="/get_info" method="POST">
         <label for="username">Ник пользователя:</label><br>
-        <input type="text" id="username" name="username"><br>
-        <input type="submit" value="Получить информацию">
+        <input type="text" id="username" name="username" placeholder="ник пользователя"><br>
+        <input type="submit" value="->">
     </form>
+
 </body>
 </html>
+
+<script src="../static/js/theme.js"></script>
