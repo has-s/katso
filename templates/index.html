@@ -4,42 +4,57 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Katso</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </head>
 <body>
 
-    <div class="theme-switcher">
-        <label class="switch">
-            <input type="checkbox" id="theme-toggle">
-            <span class="slider round"></span>
-        </label>
-    </div>
+    <header class="header">
+        <h1>Ka<span class="accent">ts</span>o.</h1>
+        <div class="theme-switcher">
+            <label class="switch">
+                <input type="checkbox" id="theme-toggle">
+                <span class="slider round"></span>
+            </label>
+        </div>
+    </header>
 
-    <h1>(*・ω・)ﾉ    пока что не готово ヾ(・ω・*)</h1>
-    <p>Katso - сервис для анализа чата и статистики стримов на Twitch</p>
-    <p>Название происходит от финского слова "смотреть" или "наблюдать", что
-    отражает суть сервиса. Вам предоставляется простой, доступный и наглядный
-    инструмент, помогающий стримерам понять предпочтения и поведение аудитории
-    через анализ ключевых слов и реакций зрителей
-    </p>
-    <p>Для работы Katso требуется доступ к данным учетной записи стримера для аналитики.
-    При переходе на сервис будет подробно описано, для какой аналитики требуются разрешения
-    </p>
-    <p>Кроме того, вы можете получить информацию о пользователе или стримере:
-    узнать дату регистрации, текущий стрим (если он идет), а также последние
-    10 стримов, если они доступны на платформе. Это не требует регистрации и/или входа
-    </p>
-    <p>Приятного пользования___〆(=^･ω･^=)
-    </p>
+    <main class="content">
+    <section class="text-section">
+        <h2>(*・ω・)ﾉ    пока что не готово ヾ(・ω・*)</h2>
+        <p>Katso - сервис для анализа чата и статистики стримов на Twitch</p>
+        <p>Название происходит от финского слова "смотреть" или "наблюдать", что
+        отражает суть сервиса. Вам предоставляется простой, доступный и наглядный
+        инструмент, помогающий стримерам понять предпочтения и поведение аудитории
+        через анализ ключевых слов и реакций зрителей
+        </p>
+        <p>Для работы Katso требуется доступ к данным учетной записи стримера для аналитики.
+        При переходе на сервис будет подробно описано, для какой аналитики требуются разрешения
+        </p>
+        <p>Кроме того, вы можете получить информацию о пользователе или стримере:
+        узнать дату регистрации, текущий стрим (если он идет), а также последние
+        10 стримов, если они доступны на платформе. Это не требует регистрации
+        </p>
+        <p>Приятного пользования___〆(=^･ω･^=)
+        </p>
+    </section>
 
-    <h3>Узнать про пользователя:</h3>
-    <form action="/get_info" method="POST">
-        <label for="username">Ник пользователя:</label><br>
-        <input type="text" id="username" name="username" placeholder="ник пользователя"><br>
-        <input type="submit" value="->">
-    </form>
+    <section class="form-section">
+        <h2>ᕕ( ᐛ )ᕗ узнать о пользователе (・・ ) ?</h2>
+        <form action="/get_info" method="POST">
+            <input type="text" id="username" name="username" placeholder="ник пользователя"><br>
+            <input type="submit" value="->">
+        </form>
+    </section>
+    </main>
+
+    <footer class="footer">
+
+    </footer>
 
 </body>
 </html>
-

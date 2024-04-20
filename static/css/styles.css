@@ -3,105 +3,203 @@
     --light-background-color: #efeae6;
     --light-text-color: #2a2b2a;
     --dark-background-color: #1e1f1e;
-    --dark-text-color: #ddd1c7;
+    --dark-text-color: #E4DFDA;
     --primary-color: #f95939;
     --secondary-color: #668586;
+    --max-width: 1200px;
 }
 
+/* Шрифты */
 .ibm-plex-mono-thin {
-  font-family: "IBM Plex Mono", monospace;
-  font-weight: 100;
-  font-style: normal;
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 100;
+    font-style: normal;
 }
 
 .ibm-plex-mono-thin-italic {
-  font-family: "IBM Plex Mono", monospace;
-  font-weight: 100;
-  font-style: italic;
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 100;
+    font-style: italic;
 }
 
 .ibm-plex-mono-extralight {
-  font-family: "IBM Plex Mono", monospace;
-  font-weight: 200;
-  font-style: normal;
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 200;
+    font-style: normal;
 }
 
 .ibm-plex-mono-extralight-italic {
-  font-family: "IBM Plex Mono", monospace;
-  font-weight: 200;
-  font-style: italic;
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 200;
+    font-style: italic;
 }
 
 .ibm-plex-mono-light {
-  font-family: "IBM Plex Mono", monospace;
-  font-weight: 300;
-  font-style: normal;
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 300;
+    font-style: normal;
 }
 
 .ibm-plex-mono-light-italic {
-  font-family: "IBM Plex Mono", monospace;
-  font-weight: 300;
-  font-style: italic;
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 300;
+    font-style: italic;
 }
 
 .ibm-plex-mono-regular {
-  font-family: "IBM Plex Mono", monospace;
-  font-weight: 400;
-  font-style: normal;
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 400;
+    font-style: normal;
 }
 
 .ibm-plex-mono-regular-italic {
-  font-family: "IBM Plex Mono", monospace;
-  font-weight: 400;
-  font-style: italic;
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 400;
+    font-style: italic;
 }
 
 .ibm-plex-mono-medium {
-  font-family: "IBM Plex Mono", monospace;
-  font-weight: 500;
-  font-style: normal;
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 500;
+    font-style: normal;
 }
 
 .ibm-plex-mono-medium-italic {
-  font-family: "IBM Plex Mono", monospace;
-  font-weight: 500;
-  font-style: italic;
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 500;
+    font-style: italic;
 }
 
 .ibm-plex-mono-semibold {
-  font-family: "IBM Plex Mono", monospace;
-  font-weight: 600;
-  font-style: normal;
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 600;
+    font-style: normal;
 }
 
 .ibm-plex-mono-semibold-italic {
-  font-family: "IBM Plex Mono", monospace;
-  font-weight: 600;
-  font-style: italic;
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 600;
+    font-style: italic;
 }
 
 .ibm-plex-mono-bold {
-  font-family: "IBM Plex Mono", monospace;
-  font-weight: 700;
-  font-style: normal;
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 700;
+    font-style: normal;
 }
 
 .ibm-plex-mono-bold-italic {
-  font-family: "IBM Plex Mono", monospace;
-  font-weight: 700;
-  font-style: italic;
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 700;
+    font-style: italic;
 }
 
-/* Стили для светлой темы */
+/* Стили для хедера */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1em 2em;
+}
+
 body {
+    font-family: "IBM Plex Mono", monospace;
+    margin: 0;
+    padding: 0;
     background-color: var(--light-background-color);
     color: var(--light-text-color);
+    transition: color 1s ease;
 }
 
 /* Стили для темной темы */
 body.dark-theme {
     background-color: var(--dark-background-color);
     color: var(--dark-text-color);
+    transition: color 1s ease;
+}
+
+body h2 {
+     text-align: center;
+}
+
+.header h1 .accent {
+    color: var(--secondary-color);
+}
+
+body.dark-theme .header h1 .accent {
+    color: var(--primary-color);
+}
+
+.content {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 2em;
+}
+
+.footer {
+    text-align: center;
+    padding: 1em;
+    background-color: var(--light-background-color);
+    color: var(--light-text-color);
+}
+
+body.dark-theme .footer {
+    background-color: var(--dark-background-color);
+    color: var(--dark-text-color);
+
+}
+
+/* Медиа-запросы для адаптивного дизайна */
+@media screen and (max-width: 768px) {
+    .content {
+        padding: 1em;
+    }
+}
+
+/* Стили для основного блока */
+.content {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 2em;
+    display: flex;
+    flex-direction: column;
+    gap: 2em;
+}
+
+/* Стили для разделов основного блока */
+.text-section {
+    width: 100%;
+}
+
+.form-section {
+    width: 100%;
+}
+
+/* Медиа-запросы для адаптивного дизайна */
+@media screen and (min-width: 768px) {
+    .content {
+        flex-direction: row;
+        align-items: flex-start;
+    }
+
+    .text-section {
+        width: 70%;
+    }
+
+    .form-section {
+        width: 30%;
+    }
+}
+
+/* Стили для разделов основного блока */
+.text-section {
+    width: 100%;
+    text-align: justify;
+    /* Выравнивание текста по ширине */
+}
+
+.form-section {
+    width: 100%;
 }
 
 /* Стили для переключателя темы */
@@ -203,7 +301,6 @@ form input[type="submit"] {
     transition: background-color 0.3s ease;
 }
 
-
 /* Дополнительные стили */
 
 /* Стили для заголовка h3 */
@@ -215,7 +312,8 @@ h3 {
 /* Стили для формы */
 form {
     margin-top: 2em;
-    width: 300px; /* Ширина формы */
+    width: 300px;
+    /* Ширина формы */
     margin-left: auto;
     margin-right: auto;
 }
@@ -229,10 +327,13 @@ form label {
 form input[type="text"] {
     padding: 0.5em;
     font-size: 1em;
-    width: calc(100% - 1em); /* Ширина поля ввода */
+    width: calc(100% - 1em);
+    /* Ширина поля ввода */
     margin-bottom: 1em;
-    border: 1px solid #ccc; /* Граница поля ввода */
-    border-radius: 4px; /* Скругление углов поля ввода */
+    border: 1px solid #ccc;
+    /* Граница поля ввода */
+    border-radius: 4px;
+    /* Скругление углов поля ввода */
 }
 
 form input[type="submit"] {
@@ -243,13 +344,15 @@ form input[type="submit"] {
     border: none;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    border-radius: 4px; /* Скругление углов кнопки */
+    border-radius: 4px;
+    /* Скругление углов кнопки */
 }
 
 /* Стили для ссылок */
 a {
     color: var(--primary-color);
-    text-decoration: none; /* Убираем подчеркивание у ссылок */
-    transition: color 0.3s ease; /* Плавное изменение цвета ссылок при наведении */
+    text-decoration: none;
+    /* Убираем подчеркивание у ссылок */
+    transition: color 0.3s ease;
+    /* Плавное изменение цвета ссылок при наведении */
 }
-

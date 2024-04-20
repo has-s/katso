@@ -89,7 +89,7 @@ def callback():
         access_token = get_access_token(code)
         if access_token:
             return redirect(url_for('chat_messages', access_token=access_token))
-    return "Ошибка при получении токена доступа."
+    return "Ошибка при получении токена доступа"
 
 # Функция для получения токена доступа по коду авторизации
 def get_access_token(code):
@@ -133,10 +133,15 @@ def get_info():
     access_token = authenticate_oauth(client_id, client_secret)
     if access_token:
         username = request.form.get('username')
+        if not username:
+            return "Пустой запрос"
         user_info = get_user_info(access_token, username)
-        stream_info = get_stream_info(access_token, user_info['id'])
-        past_streams = get_past_streams(access_token, user_info['id'])
-        return render_template('user_info.html', user_info=user_info, stream_info=stream_info, past_streams=past_streams)
+        if user_info:
+            stream_info = get_stream_info(access_token, user_info['id'])
+            past_streams = get_past_streams(access_token, user_info['id'])
+            return render_template('user_info.html', user_info=user_info, stream_info=stream_info, past_streams=past_streams)
+        else:
+            return "Пользователь не найден"
     else:
         return "Не удалось получить Bearer токен доступа."
 
