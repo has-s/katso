@@ -12,11 +12,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Установка сохраненной темы
+    // Установка сохраненной темы или выбор темы по умолчанию, если данные отсутствуют
     const currentTheme = localStorage.getItem('theme');
     if (currentTheme) {
         document.body.classList.add(currentTheme === 'dark' ? 'dark-theme' : 'light-theme');
         if (currentTheme === 'dark') {
+            toggleSwitch.checked = true;
+        }
+    } else {
+        // Проверка предпочтений пользователя по темной теме в операционной системе
+        const prefersDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (prefersDarkMode) {
+            document.body.classList.add('dark-theme');
+            localStorage.setItem('theme', 'dark');
             toggleSwitch.checked = true;
         }
     }

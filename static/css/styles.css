@@ -1,11 +1,95 @@
 /* Переменные цветов */
 :root {
-    --light-background-color: #ffffff;
-    --light-text-color: #000000;
-    --dark-background-color: #333333;
-    --dark-text-color: #ffffff;
-    --primary-color: #2196F3;
-    --secondary-color: #ccc;
+    --light-background-color: #efeae6;
+    --light-text-color: #2a2b2a;
+    --dark-background-color: #1e1f1e;
+    --dark-text-color: #ddd1c7;
+    --primary-color: #f95939;
+    --secondary-color: #668586;
+}
+
+.ibm-plex-mono-thin {
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 100;
+  font-style: normal;
+}
+
+.ibm-plex-mono-thin-italic {
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 100;
+  font-style: italic;
+}
+
+.ibm-plex-mono-extralight {
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 200;
+  font-style: normal;
+}
+
+.ibm-plex-mono-extralight-italic {
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 200;
+  font-style: italic;
+}
+
+.ibm-plex-mono-light {
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 300;
+  font-style: normal;
+}
+
+.ibm-plex-mono-light-italic {
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 300;
+  font-style: italic;
+}
+
+.ibm-plex-mono-regular {
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.ibm-plex-mono-regular-italic {
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 400;
+  font-style: italic;
+}
+
+.ibm-plex-mono-medium {
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 500;
+  font-style: normal;
+}
+
+.ibm-plex-mono-medium-italic {
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 500;
+  font-style: italic;
+}
+
+.ibm-plex-mono-semibold {
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 600;
+  font-style: normal;
+}
+
+.ibm-plex-mono-semibold-italic {
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 600;
+  font-style: italic;
+}
+
+.ibm-plex-mono-bold {
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 700;
+  font-style: normal;
+}
+
+.ibm-plex-mono-bold-italic {
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 700;
+  font-style: italic;
 }
 
 /* Стили для светлой темы */
@@ -75,3 +159,97 @@ input:checked + .slider:before {
 .slider.round:before {
     border-radius: 50%;
 }
+
+/* Дополнительные стили */
+h1 {
+    font-size: 2em;
+    margin-bottom: 0.5em;
+}
+
+p {
+    font-size: 1.2em;
+    margin-bottom: 1em;
+}
+
+.theme-switcher h1,
+.theme-switcher p {
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 400;
+}
+
+form {
+    margin-top: 2em;
+}
+
+form label {
+    display: block;
+    margin-bottom: 0.5em;
+}
+
+form input[type="text"] {
+    padding: 0.5em;
+    font-size: 1em;
+    width: 100%;
+    margin-bottom: 1em;
+}
+
+form input[type="submit"] {
+    padding: 0.5em 1em;
+    font-size: 1em;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+
+/* Дополнительные стили */
+
+/* Стили для заголовка h3 */
+h3 {
+    font-size: 1.5em;
+    margin-bottom: 0.5em;
+}
+
+/* Стили для формы */
+form {
+    margin-top: 2em;
+    width: 300px; /* Ширина формы */
+    margin-left: auto;
+    margin-right: auto;
+}
+
+form label {
+    display: block;
+    margin-bottom: 0.5em;
+    font-size: 1.2em;
+}
+
+form input[type="text"] {
+    padding: 0.5em;
+    font-size: 1em;
+    width: calc(100% - 1em); /* Ширина поля ввода */
+    margin-bottom: 1em;
+    border: 1px solid #ccc; /* Граница поля ввода */
+    border-radius: 4px; /* Скругление углов поля ввода */
+}
+
+form input[type="submit"] {
+    padding: 0.5em 1em;
+    font-size: 1em;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    border-radius: 4px; /* Скругление углов кнопки */
+}
+
+/* Стили для ссылок */
+a {
+    color: var(--primary-color);
+    text-decoration: none; /* Убираем подчеркивание у ссылок */
+    transition: color 0.3s ease; /* Плавное изменение цвета ссылок при наведении */
+}
+
