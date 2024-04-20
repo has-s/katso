@@ -121,7 +121,7 @@ def chat_messages():
         if response.status_code == 200:
             messages = response.json()['data']
             return render_template('chat_messages.html', messages=messages)
-    return "Ошибка при получении сообщений чата"
+    return "Ошибка при получении сообщений чата."
 
 
 @app.route('/')
