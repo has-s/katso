@@ -205,7 +205,7 @@ body.dark-theme .footer {
 /* Стили для переключателя темы */
 .theme-switcher {
     position: relative;
-    top: 0.7em;
+
     right: 1em;
 }
 
@@ -333,6 +333,9 @@ form input[type="text"] {
     margin-bottom: 1em;
     border: 2px solid var(--secondary-color); /* Цвет границ элемента */
     box-shadow: none; /* Убираем отлив */
+    color: var(--light-text-color);
+    background-color: var(--dark-text-color);
+    outline: none;
 }
 
 body.dark-theme form input[type="text"] {
@@ -342,6 +345,9 @@ body.dark-theme form input[type="text"] {
     margin-bottom: 1em;
     border: 2px solid var(--primary-color); /* Цвет границ элемента */
     box-shadow: none; /* Убираем отлив */
+    color: var(--dark-text-color);
+    background-color: var(--light-text-color);
+    outline: none;
 }
 
 /* Стили для формы */
