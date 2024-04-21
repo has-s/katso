@@ -1,0 +1,183 @@
+// Переменные цветов
+@light-background-color: #efeae6;
+@light-text-color: #2a2b2a;
+@dark-background-color: #1e1f1e;
+@dark-text-color: #E4DFDA;
+@primary-color: #f95939;
+@secondary-color: #668586;
+@max-width: 1200px;
+
+// Шрифты
+.ibm-plex-mono(@weight: 400; @style: normal) {
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: @weight;
+    font-style: @style;
+}
+
+// Стили для хедера
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1em 2em;
+}
+
+// Основные стили для body
+body {
+    font-family: "IBM Plex Mono", monospace;
+    margin: 0;
+    padding: 0;
+    background-color: @light-background-color;
+    color: @light-text-color;
+    transition: color 1s ease;
+
+    &.dark-theme {
+        background-color: @dark-background-color;
+        color: @dark-text-color;
+    }
+}
+
+// Тема для хедера
+.header {
+    h1 {
+        .accent {
+            color: @secondary-color;
+        }
+    }
+
+    body.dark-theme & {
+        h1 .accent {
+            color: @primary-color;
+        }
+    }
+}
+
+// Остальные стили оставляю без изменений для компактности
+.content {
+    max-width: @max-width;
+    margin: 0 auto;
+    padding: 2em;
+
+    .footer {
+        text-align: center;
+        padding: 1em;
+        background-color: @light-background-color;
+        color: @light-text-color;
+
+        body.dark-theme & {
+            background-color: @dark-background-color;
+            color: @dark-text-color;
+        }
+    }
+
+    @media screen and (max-width: 768px) {
+        padding: 1em;
+    }
+
+    .content {
+        max-width: @max-width;
+        margin: 0 auto;
+        padding: 2em;
+
+        .text-section {
+            width: 100%;
+            text-align: justify;
+        }
+
+        .form-section {
+            width: 100%;
+        }
+
+        @media screen and (min-width: 768px) {
+            flex-direction: row;
+            align-items: flex-start;
+
+            .text-section {
+                width: 70%;
+            }
+
+            .form-section {
+                width: 30%;
+            }
+        }
+    }
+}
+
+// Дополнительные стили
+h1 {
+    font-size: 2em;
+    margin-bottom: 0.5em;
+}
+
+p {
+    font-size: 1.2em;
+    margin-bottom: 1em;
+}
+
+.theme-switcher h1,
+.theme-switcher p {
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 400;
+}
+
+form {
+    margin-top: 2em;
+
+    label {
+        display: block;
+        margin-bottom: 0.5em;
+    }
+
+    input[type="text"] {
+        padding: 0.5em;
+        font-size: 1em;
+        width: 100%;
+        margin-bottom: 1em;
+    }
+
+    input[type="submit"] {
+        padding: 0.5em 1em;
+        font-size: 1em;
+        background-color: @primary-color;
+        color: white;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        border-radius: 4px;
+    }
+}
+
+// Стили для заголовка h3
+h3 {
+    font-size: 1.5em;
+    margin-bottom: 0.5em;
+}
+
+// Стили для формы
+form {
+    margin-top: 2em;
+    width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+
+    label {
+        font-size: 1.2em;
+    }
+
+    input[type="text"] {
+        width: calc(100% - 1em);
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+
+    input[type="submit"] {
+        transition: background-color 0.3s ease;
+    }
+}
+
+// Стили для ссылок
+a {
+    color: @primary-color;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}

@@ -99,7 +99,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1em 2em;
+    padding: 1em 4em;
 }
 
 body {
@@ -122,11 +122,11 @@ body h2 {
      text-align: center;
 }
 
-.header h1 .accent {
+ .accent {
     color: var(--secondary-color);
 }
 
-body.dark-theme .header h1 .accent {
+body.dark-theme .accent {
     color: var(--primary-color);
 }
 
@@ -204,9 +204,9 @@ body.dark-theme .footer {
 
 /* Стили для переключателя темы */
 .theme-switcher {
-    position: fixed;
-    top: 10px;
-    right: 10px;
+    position: relative;
+    top: 1em;
+    right: 1em;
 }
 
 .switch {
@@ -275,6 +275,36 @@ p {
     font-weight: 400;
 }
 
+/* Дополнительные стили */
+
+/* Стили для заголовка h3 */
+h3 {
+    font-size: 1.5em;
+    margin-bottom: 0.5em;
+}
+
+/* Стили для ссылок */
+a {
+    color: var(--secondary-color);
+    transition: color 0.3s ease;
+    text-decoration: none;
+    /* Плавное изменение цвета ссылок при наведении */
+}
+
+body.dark-theme a {
+    color: var(--primary-color);
+}
+
+.thanks {
+    text-align: center;
+}
+.thanks a {
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 400;
+    display: inline-block;
+    margin: 0 10px;
+}
+
 form {
     margin-top: 2em;
 }
@@ -301,14 +331,6 @@ form input[type="submit"] {
     transition: background-color 0.3s ease;
 }
 
-/* Дополнительные стили */
-
-/* Стили для заголовка h3 */
-h3 {
-    font-size: 1.5em;
-    margin-bottom: 0.5em;
-}
-
 /* Стили для формы */
 form {
     margin-top: 2em;
@@ -325,34 +347,40 @@ form label {
 }
 
 form input[type="text"] {
-    padding: 0.5em;
+    padding: 0.5em 1em;
     font-size: 1em;
     width: calc(100% - 1em);
     /* Ширина поля ввода */
     margin-bottom: 1em;
-    border: 1px solid #ccc;
     /* Граница поля ввода */
-    border-radius: 4px;
+    border-radius: 2em;
     /* Скругление углов поля ввода */
 }
 
 form input[type="submit"] {
     padding: 0.5em 1em;
     font-size: 1em;
-    background-color: var(--primary-color);
-    color: white;
+    background-color: var(--secondary-color);
+    color: var(--dark-text-color);
     border: none;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    border-radius: 4px;
+    border-radius: 20px;
     /* Скругление углов кнопки */
 }
 
-/* Стили для ссылок */
-a {
-    color: var(--primary-color);
-    text-decoration: none;
-    /* Убираем подчеркивание у ссылок */
-    transition: color 0.3s ease;
-    /* Плавное изменение цвета ссылок при наведении */
+body.dark-theme form input[type="submit"] {
+    padding: 0.5em 1em;
+    font-size: 1em;
+    background-color: var(--primary-color);
+    color: var(--light-text-color);
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    border-radius: 20px;
+    /* Скругление углов кнопки */
+}
+
+.no-wrap-text {
+    white-space: nowrap;
 }
