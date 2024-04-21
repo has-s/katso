@@ -205,7 +205,7 @@ body.dark-theme .footer {
 /* Стили для переключателя темы */
 .theme-switcher {
     position: relative;
-    top: 1em;
+    top: 0.7em;
     right: 1em;
 }
 
@@ -220,8 +220,8 @@ body.dark-theme .footer {
     position: absolute;
     cursor: pointer;
     top: 0;
-    left: 0;
-    right: 0;
+    left: -2px;
+    right: 2px;
     bottom: 0;
     background-color: var(--secondary-color);
     transition: .4s;
@@ -314,21 +314,34 @@ form label {
     margin-bottom: 0.5em;
 }
 
+form input[type="text"]::placeholder {
+    font-family: "IBM Plex Mono", monospace;
+    font-style: italic; /* Устанавливаем курсивное начертание */
+    font-weight: normal;
+}
+
+form input[type="text"]{
+    font-family: "IBM Plex Mono", monospace;
+    font-style: italic; /* Устанавливаем курсивное начертание */
+    font-weight: normal;
+}
+
 form input[type="text"] {
     padding: 0.5em;
     font-size: 1em;
     width: 100%;
     margin-bottom: 1em;
+    border: 2px solid var(--secondary-color); /* Цвет границ элемента */
+    box-shadow: none; /* Убираем отлив */
 }
 
-form input[type="submit"] {
-    padding: 0.5em 1em;
+body.dark-theme form input[type="text"] {
+    padding: 0.5em;
     font-size: 1em;
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+    width: 100%;
+    margin-bottom: 1em;
+    border: 2px solid var(--primary-color); /* Цвет границ элемента */
+    box-shadow: none; /* Убираем отлив */
 }
 
 /* Стили для формы */
@@ -338,12 +351,7 @@ form {
     /* Ширина формы */
     margin-left: auto;
     margin-right: auto;
-}
-
-form label {
-    display: block;
-    margin-bottom: 0.5em;
-    font-size: 1.2em;
+    display: flex;
 }
 
 form input[type="text"] {
@@ -357,28 +365,27 @@ form input[type="text"] {
     /* Скругление углов поля ввода */
 }
 
-form input[type="submit"] {
+body.dark-theme form input[type="text"] {
     padding: 0.5em 1em;
     font-size: 1em;
-    background-color: var(--secondary-color);
+    width: calc(100% - 1em);
+    margin-bottom: 1em;
+    border-radius: 2em;
+}
+
+form input[type="submit"] {
+    width: 2.7em;
+    height: 2.3em;
+    background-color: var(--dark-background-color);
     color: var(--dark-text-color);
     border: none;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    border-radius: 20px;
-    /* Скругление углов кнопки */
-}
-
-body.dark-theme form input[type="submit"] {
-    padding: 0.5em 1em;
-    font-size: 1em;
-    background-color: var(--primary-color);
-    color: var(--light-text-color);
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    border-radius: 20px;
-    /* Скругление углов кнопки */
+    border-radius: 100%;
+    position: relative;
+    overflow: hidden;
+    top: 0.3em;
+    right: 2.7em;
 }
 
 .no-wrap-text {
