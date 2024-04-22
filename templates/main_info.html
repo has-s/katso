@@ -34,10 +34,8 @@
         <p>URL изображения в оффлайне: <img src="{{ user_info.offline_image_url }}" alt="Offline Image"></p>
         <p>Количество просмотров (устарело): {{ user_info.view_count }}</p>
         <p>Дата создания аккаунта: {{ user_info.created_at }}</p>
-    {% else %}
         <p>Не удалось получить информацию о пользователе.</p>
     {% endif %}
-
 
 <h2>Информация о стриме:</h2>
 
@@ -58,7 +56,7 @@
         <p>Текущая игра: {{ stream_info.game_name }}</p>
         <p>Имя стримера: {{ stream_info.user_name }}</p>
     {% else %}
-        <p>Стрим активен: Нет</p>
+        <p>Стример сейчас не в сети.</p>
     {% endif %}
 
 <h2>Предыдущие стримы</h2>
