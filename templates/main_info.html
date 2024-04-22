@@ -34,6 +34,7 @@
         <p>URL изображения в оффлайне: <img src="{{ user_info.offline_image_url }}" alt="Offline Image"></p>
         <p>Количество просмотров (устарело): {{ user_info.view_count }}</p>
         <p>Дата создания аккаунта: {{ user_info.created_at }}</p>
+    {% else %}
         <p>Не удалось получить информацию о пользователе.</p>
     {% endif %}
 
