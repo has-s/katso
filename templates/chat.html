@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat</title>
+    <style>
+        .comment {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .comment .header {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .comment .message {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>Chat</h1>
+    <div id="chat">
+        {% for comment in chat_data['data']['video']['comments']['edges'] %}
+        <div class="comment">
+            <div class="header">
+                <span class="commenter">{{ comment['node']['commenter']['displayName'] }}</span> -
+                <span class="timestamp">{{ comment['node']['createdAt'] }}</span>
+            </div>
+            <div class="message">{{ comment['node']['message']['fragments'][0]['text'] }}</div>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

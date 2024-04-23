@@ -1,7 +1,13 @@
 from flask import Flask, render_template, request, redirect, url_for
-import requests
 from dotenv import load_dotenv
+from enum import Enum
+import requests
+import logging
+import json
 import os
+
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+
 
 load_dotenv()
 client_id = os.getenv("CLIENT_ID")
@@ -10,6 +16,87 @@ template_path = os.getenv("TEMPLATE_PATH")
 redirect_uri = os.getenv("REDIRECT_URI")
 
 app = Flask(__name__, template_folder=template_path)
+
+
+# Определяем классы для формата чата и типа загрузки
+class ChatFormat(Enum):
+    JSON = "json"
+    HTML = "html"
+    TEXT = "txt"
+
+class DownloadType(Enum):
+    VIDEO = 1
+    CLIP = 2
+
+class DownloadOptions:
+    def __init__(self, download_type, video_id, download_format, video_start=None):
+        self.download_type = download_type
+        self.video_id = video_id
+        self.download_format = download_format
+        self.video_start = video_start
+
+# Определяем класс для загрузки чата
+class ChatDownloader:
+    def __init__(self, download_options):
+        self.download_options = download_options
+
+    def _fetch_chat_data(self):
+        headers = {
+            "Client-ID": "kd1unb4b3q4t58fwlpcbzcbnm76a8fp"
+        }
+
+        # Формируем запрос в зависимости от типа загрузки
+        if self.download_options.download_type == DownloadType.VIDEO:
+            url = "https://gql.twitch.tv/gql"
+            payload = {
+                "operationName": "VideoCommentsByOffsetOrCursor",
+                "variables": {
+                    "videoID": self.download_options.video_id,
+                    "contentOffsetSeconds": self.download_options.video_start
+                },
+                "extensions": {
+                    "persistedQuery": {
+                        "version": 1,
+                        "sha256Hash": "b70a3591ff0f4e0313d126c6a1502d79a1c02baebb288227c582044aa76adf6a"
+                    }
+                }
+            }
+        else:
+            # Здесь может быть реализация для получения данных клипа
+            pass
+
+        try:
+            response = requests.post(url, headers=headers, json=payload)
+            response.raise_for_status()
+            return response.json()
+        except requests.RequestException as e:
+            print(f"Error fetching chat data: {e}")
+            return None
+
+    def _process_chat_data(self, chat_data):
+        if not chat_data:
+            print("No chat data to process")
+            return []
+
+        processed_comments = []
+        for comment in chat_data[0]['data']['video']['comments']['edges']:
+            processed_comment = {
+                '_id': comment['node']['id'],
+                'created_at': comment['node']['createdAt'],
+                'content_offset_seconds': comment['node']['contentOffsetSeconds'],
+                'commenter': {
+                    'display_name': comment['node']['commenter']['displayName'].strip(),
+                    '_id': comment['node']['commenter']['id'],
+                    'name': comment['node']['commenter']['login']
+                },
+                'message': {
+                    'body': "".join([fragment['text'] for fragment in comment['node']['message']['fragments'] if fragment['text']]),
+                    'user_color': comment['node']['message']['userColor']
+                }
+            }
+            processed_comments.append(processed_comment)
+
+        return processed_comments
 
 def authenticate_oauth(client_id, client_secret):
     token_url = "https://id.twitch.tv/oauth2/token"
@@ -130,6 +217,35 @@ def chat_messages():
 def index():
     return render_template("index.html")
 
+@app.route('/test')
+def test():
+    return render_template("test.html")
+
+
+@app.route('/download_chat', methods=['POST'])
+def download_chat():
+    try:
+        vod_id = request.form['vod_id']
+        logging.info(f"Received request to download chat for VOD ID: {vod_id}")
+
+        download_options = DownloadOptions(
+            download_type=DownloadType.VIDEO,
+            video_id=vod_id,
+            download_format=ChatFormat.JSON,
+        )
+
+        chat_downloader = ChatDownloader(download_options)
+
+        chat_data = chat_downloader._fetch_chat_data()  # Вместо chat_downloader.download()
+        logging.info("Chat downloaded successfully")
+
+        return render_template('chat.html', chat_data=chat_data)
+
+    except Exception as e:
+        logging.error(f"Error processing download_chat request: {e}")
+        # Возвращаем ошибку в виде HTTP 500 Internal Server Error
+        return "Internal Server Error", 500
+
 # Эндпоинт для авторизации
 @app.route('/authorize')
 def authorize():
@@ -165,6 +281,7 @@ def get_info():
             return "Пользователь не найден"
     else:
         return "Не удалось получить Bearer токен доступа."
+
 if __name__ == "__main__":
     app.run()
 #
