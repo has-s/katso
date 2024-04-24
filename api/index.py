@@ -3,11 +3,10 @@ from dotenv import load_dotenv
 from enum import Enum
 import requests
 import logging
-import json
+import datetime
 import os
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
-
 
 load_dotenv()
 client_id = os.getenv("CLIENT_ID")
@@ -17,25 +16,20 @@ redirect_uri = os.getenv("REDIRECT_URI")
 
 app = Flask(__name__, template_folder=template_path)
 
-
 # Определяем классы для формата чата и типа загрузки
 class ChatFormat(Enum):
     JSON = "json"
     HTML = "html"
     TEXT = "txt"
-
 class DownloadType(Enum):
     VIDEO = 1
     CLIP = 2
-
 class DownloadOptions:
     def __init__(self, download_type, video_id, download_format, video_start=None):
         self.download_type = download_type
         self.video_id = video_id
         self.download_format = download_format
         self.video_start = video_start
-
-# Определяем класс для загрузки чата
 class ChatDownloader:
     def __init__(self, download_options):
         self.download_options = download_options
@@ -111,8 +105,6 @@ def authenticate_oauth(client_id, client_secret):
         if 'access_token' in data:
             return data['access_token']
     return None
-
-# Функция для получения токена доступа по коду авторизации
 def get_access_token(code):
     token_url = "https://id.twitch.tv/oauth2/token"
     params = {
@@ -128,7 +120,6 @@ def get_access_token(code):
         if 'access_token' in data:
             return data['access_token']
     return None
-
 def get_user_info(access_token, username):
     url = f"https://api.twitch.tv/helix/users?login={username}"
     headers = {
@@ -139,38 +130,6 @@ def get_user_info(access_token, username):
     if response.status_code == 200:
         data = response.json()
         return data['data'][0] if 'data' in data and len(data['data']) > 0 else None
-    return None
-
-
-def get_follower_count(access_token, username):
-    # Получаем информацию о пользователе
-    user_info_url = f"https://api.twitch.tv/helix/users?login={username}"
-    headers = {
-        "Authorization": f"Bearer {access_token}",
-        "Client-ID": client_id
-    }
-
-    print("Requesting user info...")
-    response = requests.get(user_info_url, headers=headers)
-
-    if response.status_code == 200:
-        print("User info request successful.")
-        user_data = response.json()
-        if 'data' in user_data and len(user_data['data']) > 0:
-            user_id = user_data['data'][0]['id']
-            # Получаем количество фолловеров пользователя
-            followers_url = f"https://api.twitch.tv/helix/users/follows?to_id={user_id}"
-
-            print("Requesting follower count...")
-            response = requests.get(followers_url, headers=headers)
-
-            if response.status_code == 200:
-                print("Follower count request successful.")
-                followers_data = response.json()
-                if 'total' in followers_data:
-                    return followers_data['total']
-
-    print("An error occurred while retrieving follower count.")
     return None
 def get_stream_info(access_token, username):
     url = f"https://api.twitch.tv/helix/streams?user_login={username}"
@@ -183,7 +142,6 @@ def get_stream_info(access_token, username):
         data = response.json()
         return data['data'][0] if 'data' in data and len(data['data']) > 0 else None
     return None
-
 def get_past_streams(access_token, user_id, limit=10):
     url = f"https://api.twitch.tv/helix/videos?user_id={user_id}&type=archive&first={limit}"
     headers = {
@@ -195,23 +153,87 @@ def get_past_streams(access_token, user_id, limit=10):
         data = response.json()
         return data['data'] if 'data' in data else None
     return None
+def get_stream_start(access_token, vod_id):
+    url = f"https://api.twitch.tv/helix/videos?id={vod_id}"
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Client-ID": client_id
+    }
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        data = response.json()
+        return data['data'][0]['created_at'] if 'data' in data and len(data['data']) > 0 else None
+    return None
+def fetch_chat_data_with_timestamp(chat_downloader, timestamp):
+    try:
+        # Устанавливаем временную метку начала загрузки чата
+        chat_downloader.download_options.video_start = timestamp
 
-'''
-# Эндпоинт для получения сообщений чата
-@app.route('/chat/messages')
-def chat_messages():
-    access_token = request.args.get('access_token')
-    if access_token:
-        headers = {
-            "Authorization": f"Bearer {access_token}",
-            "Client-ID": client_id
-        }
-        response = requests.get("https://api.twitch.tv/helix/chat/recent", headers=headers)
-        if response.status_code == 200:
-            messages = response.json()['data']
-            return render_template('chat_messages.html', messages=messages)
-    return "Ошибка при получении сообщений чата."
-'''
+        # Получаем данные чата
+        chat_data = chat_downloader._fetch_chat_data()
+
+        return chat_data
+
+    except Exception as e:
+        print(f"Error fetching chat data: {e}")
+        return None
+def convert_time_format(time_str, from_format="%Y-%m-%dT%H:%M:%SZ", to_format="%Y-%m-%d %H:%M:%S.%f"):
+    try:
+        # Преобразуем строку времени из исходного формата в объект datetime
+        time_obj = datetime.datetime.strptime(time_str, from_format)
+
+        # Преобразуем объект datetime обратно в строку в нужном формате
+        new_time_str = time_obj.strftime(to_format)
+
+        return new_time_str
+    except ValueError as e:
+        print("Error:", e)
+        return None
+def calculate_delta(time_str1, time_str2):
+    try:
+        # Преобразовываем строки в объекты datetime
+        time1 = datetime.datetime.strptime(time_str1, "%Y-%m-%dT%H:%M:%SZ")
+        time2 = datetime.datetime.strptime(time_str2, "%Y-%m-%d %H:%M:%S.%f")
+
+        # Вычисляем разницу между временными отметками
+        time_difference = time2 - time1
+
+        # Получаем количество секунд в разнице времени
+        seconds_difference = time_difference.total_seconds()
+
+        return seconds_difference
+    except ValueError as e:
+        print("Error:", e)
+        return None
+def calculate_delta_in(time_str1, time_str2):
+    try:
+        # Преобразуем строки в объекты datetime
+        time1 = datetime.datetime.strptime(time_str1, "%Y-%m-%d %H:%M:%S.%f")
+        time2 = datetime.datetime.strptime(time_str2, "%Y-%m-%d %H:%M:%S.%f")
+
+        # Вычисляем разницу между временными отметками в секундах
+        time_delta = (time2 - time1).total_seconds()
+
+        return time_delta
+    except ValueError as e:
+        print("Error:", e)
+        return None
+def get_last_message_timestamp(chat_data):
+    last_message_timestamp = None
+
+    # Проверяем наличие данных чата
+    if chat_data and 'data' in chat_data and 'video' in chat_data['data'] and 'comments' in chat_data['data']['video']:
+        comments = chat_data['data']['video']['comments']['edges']
+
+        # Если есть комментарии, получаем временную метку последнего сообщения
+        if comments:
+            last_comment = comments[-1]['node']
+            last_message_timestamp = last_comment['createdAt']
+
+            # Преобразуем формат временной метки
+            last_message_timestamp = last_message_timestamp.replace('T', ' ').replace('Z', '')
+
+    return last_message_timestamp
 
 @app.route('/')
 def index():
@@ -225,6 +247,7 @@ def test():
 @app.route('/download_chat', methods=['POST'])
 def download_chat():
     try:
+        access_token = authenticate_oauth(client_id, client_secret)
         vod_id = request.form['vod_id']
         logging.info(f"Received request to download chat for VOD ID: {vod_id}")
 
@@ -237,6 +260,22 @@ def download_chat():
         chat_downloader = ChatDownloader(download_options)
 
         chat_data = chat_downloader._fetch_chat_data()  # Вместо chat_downloader.download()
+
+        print(get_stream_start(access_token, vod_id))
+        timestamp = get_last_message_timestamp(chat_data)
+        print(get_last_message_timestamp(chat_data))
+###
+        delta = int(calculate_delta(get_stream_start(access_token, vod_id), get_last_message_timestamp(chat_data)))
+
+        chat_data = fetch_chat_data_with_timestamp(chat_downloader, delta)
+
+        int(calculate_delta_in(timestamp, get_last_message_timestamp(chat_data)))
+
+        delta += int(calculate_delta_in(timestamp, get_last_message_timestamp(chat_data)))
+
+        chat_data = fetch_chat_data_with_timestamp(chat_downloader, delta)
+
+###
         logging.info("Chat downloaded successfully")
 
         return render_template('chat.html', chat_data=chat_data)
@@ -274,9 +313,7 @@ def get_info():
         if user_info:
             stream_info = get_stream_info(access_token, username)
             past_streams = get_past_streams(access_token, user_info['id'])
-            follower_count = get_follower_count(access_token, username)
-            print(follower_count)
-            return render_template('main_info.html', user_info=user_info, stream_info=stream_info, past_streams=past_streams, follower_count=follower_count)
+            return render_template('main_info.html', user_info=user_info, stream_info=stream_info, past_streams=past_streams)
         else:
             return "Пользователь не найден"
     else:
