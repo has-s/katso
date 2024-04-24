@@ -142,17 +142,6 @@ def get_stream_info(access_token, username):
         data = response.json()
         return data['data'][0] if 'data' in data and len(data['data']) > 0 else None
     return None
-def get_past_streams(access_token, user_id, limit=10):
-    url = f"https://api.twitch.tv/helix/videos?user_id={user_id}&type=archive&first={limit}"
-    headers = {
-        "Authorization": f"Bearer {access_token}",
-        "Client-ID": client_id
-    }
-    response = requests.get(url, headers=headers)
-    if response.status_code == 200:
-        data = response.json()
-        return data['data'] if 'data' in data else None
-    return None
 def get_stream_start(access_token, vod_id):
     url = f"https://api.twitch.tv/helix/videos?id={vod_id}"
     headers = {
@@ -164,7 +153,47 @@ def get_stream_start(access_token, vod_id):
         data = response.json()
         return data['data'][0]['created_at'] if 'data' in data and len(data['data']) > 0 else None
     return None
-def fetch_chat_data_with_timestamp(chat_downloader, timestamp):
+
+def get_stream_end(access_token, vod_id):
+    url = f"https://api.twitch.tv/helix/videos?id={vod_id}"
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Client-ID": client_id
+    }
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        data = response.json()
+        return data['data'][0]['created_at'] if 'data' in data and len(data['data']) > 0 else None
+    return None
+def get_stream_duration(access_token, vod_id):
+    # Получаем время начала стрима и окончания
+    stream_start_time = get_stream_start(access_token, vod_id)
+    stream_end_time = get_stream_end(access_token, vod_id)
+
+    # Проверяем, что удалось получить обе даты
+    if stream_start_time is None or stream_end_time is None:
+        return None
+
+    # Преобразуем строки времени в объекты datetime
+    start_datetime = datetime.datetime.strptime(stream_start_time, "%Y-%m-%dT%H:%M:%S.%fZ")
+    end_datetime = datetime.datetime.strptime(stream_end_time, "%Y-%m-%dT%H:%M:%S.%fZ")
+
+    # Вычисляем разницу между временем начала и окончания стрима
+    duration = (end_datetime - start_datetime).total_seconds()
+
+    return duration
+def get_past_streams(access_token, user_id, limit=10):
+    url = f"https://api.twitch.tv/helix/videos?user_id={user_id}&type=archive&first={limit}"
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Client-ID": client_id
+    }
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        data = response.json()
+        return data['data'] if 'data' in data else None
+    return None
+def get_chat_from(chat_downloader, timestamp):
     try:
         # Устанавливаем временную метку начала загрузки чата
         chat_downloader.download_options.video_start = timestamp
@@ -176,47 +205,6 @@ def fetch_chat_data_with_timestamp(chat_downloader, timestamp):
 
     except Exception as e:
         print(f"Error fetching chat data: {e}")
-        return None
-def convert_time_format(time_str, from_format="%Y-%m-%dT%H:%M:%SZ", to_format="%Y-%m-%d %H:%M:%S.%f"):
-    try:
-        # Преобразуем строку времени из исходного формата в объект datetime
-        time_obj = datetime.datetime.strptime(time_str, from_format)
-
-        # Преобразуем объект datetime обратно в строку в нужном формате
-        new_time_str = time_obj.strftime(to_format)
-
-        return new_time_str
-    except ValueError as e:
-        print("Error:", e)
-        return None
-def calculate_delta(time_str1, time_str2):
-    try:
-        # Преобразовываем строки в объекты datetime
-        time1 = datetime.datetime.strptime(time_str1, "%Y-%m-%dT%H:%M:%SZ")
-        time2 = datetime.datetime.strptime(time_str2, "%Y-%m-%d %H:%M:%S.%f")
-
-        # Вычисляем разницу между временными отметками
-        time_difference = time2 - time1
-
-        # Получаем количество секунд в разнице времени
-        seconds_difference = time_difference.total_seconds()
-
-        return seconds_difference
-    except ValueError as e:
-        print("Error:", e)
-        return None
-def calculate_delta_in(time_str1, time_str2):
-    try:
-        # Преобразуем строки в объекты datetime
-        time1 = datetime.datetime.strptime(time_str1, "%Y-%m-%d %H:%M:%S.%f")
-        time2 = datetime.datetime.strptime(time_str2, "%Y-%m-%d %H:%M:%S.%f")
-
-        # Вычисляем разницу между временными отметками в секундах
-        time_delta = (time2 - time1).total_seconds()
-
-        return time_delta
-    except ValueError as e:
-        print("Error:", e)
         return None
 def get_last_message_timestamp(chat_data):
     last_message_timestamp = None
@@ -235,20 +223,9 @@ def get_last_message_timestamp(chat_data):
 
     return last_message_timestamp
 
-@app.route('/')
-def index():
-    return render_template("index.html")
-
-@app.route('/test')
-def test():
-    return render_template("test.html")
-
-
-@app.route('/download_chat', methods=['POST'])
-def download_chat():
+def get_full_chat(vod_id):
     try:
         access_token = authenticate_oauth(client_id, client_secret)
-        vod_id = request.form['vod_id']
         logging.info(f"Received request to download chat for VOD ID: {vod_id}")
 
         download_options = DownloadOptions(
@@ -259,23 +236,85 @@ def download_chat():
 
         chat_downloader = ChatDownloader(download_options)
 
-        chat_data = chat_downloader._fetch_chat_data()  # Вместо chat_downloader.download()
+        # Получаем данные чата
+        last_stamp  = 0
+        chat_data = get_chat_from(chat_downloader, last_stamp)
 
-        print(get_stream_start(access_token, vod_id))
-        timestamp = get_last_message_timestamp(chat_data)
-        print(get_last_message_timestamp(chat_data))
-###
-        delta = int(calculate_delta(get_stream_start(access_token, vod_id), get_last_message_timestamp(chat_data)))
+        # Получаем время начала стрима
+        stream_start_time = convert_time_format(get_stream_start(access_token, vod_id))
+        delta = int(calculate_delta(stream_start_time, get_last_message_timestamp(chat_data)))
+        # Загружаем часть чата, начиная с текущей временной дельты
+        chat_data = get_chat_from(chat_downloader, delta)
+        logging.info(f"{last_stamp}")
+        # Загружаем чат по частям, начиная с начала стрима
+        logging.info(f"до цикла")
+        while True:
+            logging.info(f"после цикла")
 
-        chat_data = fetch_chat_data_with_timestamp(chat_downloader, delta)
+            last_stamp =+ delta
+            chat_part = get_chat_from(chat_downloader, last_stamp)
+            logging.info(f"{last_stamp}")
+            delta = int(calculate_delta(stream_start_time, get_last_message_timestamp(chat_data)))
 
-        int(calculate_delta_in(timestamp, get_last_message_timestamp(chat_data)))
+            logging.info(f"после chat_part")
+            # Если часть чата пуста, значит мы загрузили все сообщения
+            if not chat_part:
+                break
 
-        delta += int(calculate_delta_in(timestamp, get_last_message_timestamp(chat_data)))
+            # Добавляем часть чата в общий список
+            chat_data.update(chat_part)
 
-        chat_data = fetch_chat_data_with_timestamp(chat_downloader, delta)
+        logging.info("Chat downloaded successfully")
 
-###
+        return chat_data
+
+    except Exception as e:
+        logging.error(f"Error processing download_chat request: {e}")
+        return None
+
+
+
+def convert_time_format(time_str, from_format="%Y-%m-%dT%H:%M:%SZ", to_format="%Y-%m-%d %H:%M:%S.%f"):
+    try:
+        # Преобразуем строку времени из исходного формата в объект datetime
+        time_obj = datetime.datetime.strptime(time_str, from_format)
+
+        # Преобразуем объект datetime обратно в строку в нужном формате
+        new_time_str = time_obj.strftime(to_format)
+
+        return new_time_str
+    except ValueError as e:
+        print("Error:", e)
+        return None
+def calculate_delta(time_str1, time_str2):
+    try:
+        # Преобразуем строки в объекты datetime
+        time1 = datetime.datetime.strptime(time_str1, "%Y-%m-%d %H:%M:%S.%f")
+        time2 = datetime.datetime.strptime(time_str2, "%Y-%m-%d %H:%M:%S.%f")
+
+        # Вычисляем разницу между временными отметками в секундах
+        time_delta = (time2 - time1).total_seconds()
+
+        return time_delta
+    except ValueError as e:
+        print("Error:", e)
+        return None
+
+@app.route('/test')
+def test():
+    return render_template("test.html")
+@app.route('/download_chat', methods=['POST'])
+def download_chat():
+    try:
+        access_token = authenticate_oauth(client_id, client_secret)
+        vod_id = request.form['vod_id']
+        logging.info(f"Received request to download chat for VOD ID: {vod_id}")
+
+        chat_data = get_full_chat(vod_id)
+
+        if chat_data is None:
+            return "Unable to download chat data", 500
+
         logging.info("Chat downloaded successfully")
 
         return render_template('chat.html', chat_data=chat_data)
@@ -291,7 +330,6 @@ def authorize():
     authorize_url = f"https://id.twitch.tv/oauth2/authorize?client_id={client_id}&redirect_uri={redirect_uri}&response_type=code&scope=chat:read"
     return redirect(authorize_url)
 
-
 # Эндпоинт для обработки редиректа после авторизации
 @app.route('/callback')
 def callback():
@@ -301,7 +339,6 @@ def callback():
         if access_token:
             return redirect(url_for('chat_messages', access_token=access_token))
     return "Ошибка при получении токена доступа"
-
 @app.route('/get_info', methods=['POST'])
 def get_info():
     access_token = authenticate_oauth(client_id, client_secret)
@@ -318,6 +355,10 @@ def get_info():
             return "Пользователь не найден"
     else:
         return "Не удалось получить Bearer токен доступа."
+
+@app.route('/')
+def index():
+    return render_template("index.html")
 
 if __name__ == "__main__":
     app.run()
