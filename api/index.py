@@ -5,6 +5,8 @@ import requests
 import logging
 import datetime
 import os
+import re
+import json
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -153,8 +155,7 @@ def get_stream_start(access_token, vod_id):
         data = response.json()
         return data['data'][0]['created_at'] if 'data' in data and len(data['data']) > 0 else None
     return None
-
-def get_stream_end(access_token, vod_id):
+def get_stream_duration(access_token, vod_id):
     url = f"https://api.twitch.tv/helix/videos?id={vod_id}"
     headers = {
         "Authorization": f"Bearer {access_token}",
@@ -163,25 +164,8 @@ def get_stream_end(access_token, vod_id):
     response = requests.get(url, headers=headers)
     if response.status_code == 200:
         data = response.json()
-        return data['data'][0]['created_at'] if 'data' in data and len(data['data']) > 0 else None
+        return data['data'][0]['duration'] if 'data' in data and len(data['data']) > 0 else None
     return None
-def get_stream_duration(access_token, vod_id):
-    # Получаем время начала стрима и окончания
-    stream_start_time = get_stream_start(access_token, vod_id)
-    stream_end_time = get_stream_end(access_token, vod_id)
-
-    # Проверяем, что удалось получить обе даты
-    if stream_start_time is None or stream_end_time is None:
-        return None
-
-    # Преобразуем строки времени в объекты datetime
-    start_datetime = datetime.datetime.strptime(stream_start_time, "%Y-%m-%dT%H:%M:%S.%fZ")
-    end_datetime = datetime.datetime.strptime(stream_end_time, "%Y-%m-%dT%H:%M:%S.%fZ")
-
-    # Вычисляем разницу между временем начала и окончания стрима
-    duration = (end_datetime - start_datetime).total_seconds()
-
-    return duration
 def get_past_streams(access_token, user_id, limit=10):
     url = f"https://api.twitch.tv/helix/videos?user_id={user_id}&type=archive&first={limit}"
     headers = {
@@ -237,35 +221,27 @@ def get_full_chat(vod_id):
         chat_downloader = ChatDownloader(download_options)
 
         # Получаем данные чата
-        last_stamp  = 0
+        last_stamp = 0
         chat_data = get_chat_from(chat_downloader, last_stamp)
 
         # Получаем время начала стрима
         stream_start_time = convert_time_format(get_stream_start(access_token, vod_id))
+        stream_duration = duration_to_seconds(get_stream_duration(access_token, vod_id))
+
         delta = int(calculate_delta(stream_start_time, get_last_message_timestamp(chat_data)))
         # Загружаем часть чата, начиная с текущей временной дельты
         chat_data = get_chat_from(chat_downloader, delta)
-        logging.info(f"{last_stamp}")
+        last_stamp = + delta
         # Загружаем чат по частям, начиная с начала стрима
-        logging.info(f"до цикла")
-        while True:
-            logging.info(f"после цикла")
+        while last_stamp <= stream_duration:
 
-            last_stamp =+ delta
             chat_part = get_chat_from(chat_downloader, last_stamp)
-            logging.info(f"{last_stamp}")
-            delta = int(calculate_delta(stream_start_time, get_last_message_timestamp(chat_data)))
-
-            logging.info(f"после chat_part")
-            # Если часть чата пуста, значит мы загрузили все сообщения
-            if not chat_part:
-                break
-
-            # Добавляем часть чата в общий список
-            chat_data.update(chat_part)
-
+            glmt = get_last_message_timestamp(chat_part)
+            strsttime = stream_start_time
+            last_stamp = int(calculate_delta(strsttime ,glmt))
+            chat_data = {**chat_data, **chat_part}
+            logging.info(f"Timestamp {last_stamp}")
         logging.info("Chat downloaded successfully")
-
         return chat_data
 
     except Exception as e:
@@ -285,6 +261,23 @@ def convert_time_format(time_str, from_format="%Y-%m-%dT%H:%M:%SZ", to_format="%
         return new_time_str
     except ValueError as e:
         print("Error:", e)
+        return None
+
+def duration_to_seconds(duration_str):
+    # Регулярное выражение для извлечения часов, минут и секунд из строки
+    pattern = r'(\d+)h(\d+)m(\d+)s'
+
+    # Поиск соответствия шаблону в строке
+    match = re.match(pattern, duration_str)
+
+    if match:
+        hours = int(match.group(1))
+        minutes = int(match.group(2))
+        seconds = int(match.group(3))
+
+        total_seconds = hours * 3600 + minutes * 60 + seconds
+        return total_seconds
+    else:
         return None
 def calculate_delta(time_str1, time_str2):
     try:
@@ -361,5 +354,5 @@ def index():
     return render_template("index.html")
 
 if __name__ == "__main__":
-    app.run()
+    app.run( host='0.0.0.0', port=5001, debug=True )
 #
