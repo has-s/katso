@@ -207,6 +207,38 @@ def get_last_message_timestamp(chat_data):
 
     return last_message_timestamp
 
+
+def filter_chat_data(chat_part):
+    # Создаем список для хранения отфильтрованных данных
+    filtered_data = []
+
+    # Итерируемся по комментариям и извлекаем только нужные данные
+    for comment in chat_part["data"]["video"]["comments"]["edges"]:
+        commenter_id = comment["node"]["commenter"]["id"]
+        display_name = comment["node"]["commenter"]["displayName"]
+        timestamp = comment["node"]["contentOffsetSeconds"]
+        message_text = comment["node"]["message"]["fragments"][0]["text"]
+
+        # Создаем словарь для каждого комментария с нужными данными
+        filtered_comment = {
+            "commenter_id": commenter_id,
+            "display_name": display_name,
+            "timestamp": timestamp,
+            "message_text": message_text
+        }
+
+        # Добавляем словарь комментария в список
+        filtered_data.append(filtered_comment)
+
+    return filtered_data
+
+def flatten_chat(chat_filt):
+    flattened_chat = []
+    for segment in chat_filt:
+        flattened_chat.extend(segment)
+    return flattened_chat
+
+
 def get_full_chat(vod_id):
     try:
         access_token = authenticate_oauth(client_id, client_secret)
@@ -221,6 +253,7 @@ def get_full_chat(vod_id):
         chat_downloader = ChatDownloader(download_options)
 
         # Получаем данные чата
+        chat_filt = []
         last_stamp = 0
         chat_data = get_chat_from(chat_downloader, last_stamp)
 
@@ -229,20 +262,23 @@ def get_full_chat(vod_id):
         stream_duration = duration_to_seconds(get_stream_duration(access_token, vod_id))
 
         delta = int(calculate_delta(stream_start_time, get_last_message_timestamp(chat_data)))
+
+        chat_filt = filter_chat_data(chat_data)
         # Загружаем часть чата, начиная с текущей временной дельты
         chat_data = get_chat_from(chat_downloader, delta)
         last_stamp = + delta
         # Загружаем чат по частям, начиная с начала стрима
+        chat_filt.extend(filter_chat_data(chat_data))
         while last_stamp <= stream_duration:
 
             chat_part = get_chat_from(chat_downloader, last_stamp)
             glmt = get_last_message_timestamp(chat_part)
             strsttime = stream_start_time
             last_stamp = int(calculate_delta(strsttime ,glmt))
-            chat_data = {**chat_data, **chat_part}
+            chat_filt.extend(filter_chat_data(chat_data))
             logging.info(f"Timestamp {last_stamp}")
         logging.info("Chat downloaded successfully")
-        return chat_data
+        return flatten_chat(chat_filt)
 
     except Exception as e:
         logging.error(f"Error processing download_chat request: {e}")

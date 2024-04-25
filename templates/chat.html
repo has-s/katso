@@ -24,14 +24,16 @@
 <body>
     <h1>Chat</h1>
     <div id="chat">
-        {% for comment in chat_data['data']['video']['comments']['edges'] %}
-        <div class="comment">
-            <div class="header">
-                <span class="commenter">{{ comment['node']['commenter']['displayName'] }}</span> -
-                <span class="timestamp">{{ comment['node']['createdAt'] }}</span>
-            </div>
-            <div class="message">{{ comment['node']['message']['fragments'][0]['text'] }}</div>
-        </div>
+        {% for segment in chat_data %}
+            {% for comment in segment %}
+                <div class="comment">
+                    <div class="header">
+                        <span class="commenter">{{ comment['display_name'] }}</span> -
+                        <span class="timestamp">{{ comment['timestamp'] }}</span>
+                    </div>
+                    <div class="message">{{ comment['message_text'] }}</div>
+                </div>
+            {% endfor %}
         {% endfor %}
     </div>
 </body>
