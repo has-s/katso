@@ -14,6 +14,7 @@ client_id = os.getenv("CLIENT_ID")
 client_secret = os.getenv("CLIENT_SECRET")
 template_path = os.getenv("TEMPLATE_PATH")
 redirect_uri = os.getenv("REDIRECT_URI")
+cli_path = os.getenv("CLI_PATH")
 
 app = Flask(__name__, template_folder=template_path)
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -318,7 +319,7 @@ def callback():
 ''' # Эндпоинт пользовательской авторизации
 
 def download(stream_id: int):
-    subprocess.run(["TwitchDownloaderCLI", "chatdownload", "--id", str(stream_id), "--output", "chat.json"])
+    subprocess.run([cli_path, "chatdownload", "--id", str(stream_id), "--output", "chat.json"])
     return json.load(open("chat.json", "r").read())
 
 @app.route('/test')
