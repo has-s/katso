@@ -32,3 +32,4 @@ document.addEventListener('DOMContentLoaded', function() {
     // Слушатель события изменения переключателя
     toggleSwitch.addEventListener('change', switchTheme);
 });
+

@@ -1,11 +1,10 @@
-from flask import Flask, render_template, request, send_from_directory  # redirect, url_for
+from flask import Flask, render_template, request
 from dotenv import load_dotenv
 from enum import Enum
 import requests
 import logging
 import datetime
-import subprocess
-import json
+import jsonify
 import os
 import re
 
@@ -14,7 +13,6 @@ client_id = os.getenv("CLIENT_ID")
 client_secret = os.getenv("CLIENT_SECRET")
 template_path = os.getenv("TEMPLATE_PATH")
 redirect_uri = os.getenv("REDIRECT_URI")
-cli_path = os.getenv("CLI_PATH")
 
 app = Flask(__name__, template_folder=template_path)
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -42,8 +40,6 @@ access_token = authenticate_oauth(client_id, client_secret)
 # Определяем классы для формата чата и типа загрузки
 class ChatFormat(Enum):
     JSON = "json"
-    HTML = "html"
-    TEXT = "txt"
 
 
 class DownloadType(Enum):
@@ -352,45 +348,49 @@ def callback():
 '''  # Эндпоинт пользовательской авторизации
 
 
-def download(stream_id: int, twitchcli_path: str = "TwitchDownloaderCLI"):
-    subprocess.run([twitchcli_path, "chatdownload", "--id", str(stream_id), "--output", "chat.json"])
-    return json.load(open("chat.json", "r").read())
-
-
-@app.route('/TwitchDownloaderCLI/<path:path>')
-def send_twitchcli(path):
-    return send_from_directory('TwitchDownloaderCLI', path)
-
-
-@app.route('/static/<path:path>')
-def send_static(path):
-    return send_from_directory('static', path)
-
-
 @app.route('/test')
 def test():
     return render_template("test.html")
 
-
 @app.route('/download_chat', methods=['POST'])
 def download_chat():
-    '''
+    try:
         vod_id = request.form['vod_id']
         logging.info(f"Received request to download chat for VOD ID: {vod_id}")
+
         chat_data = get_full_chat(vod_id)
+
         if chat_data is None:
             return "Unable to download chat data", 500
+
         logging.info("Chat downloaded successfully")
-    '''
-    vod_id = request.form['vod_id']
-    chat_data = download(vod_id)
-    if chat_data:
-        print("Чат успешно загружен:", chat_data)
-    else:
-        print("Не удалось загрузить чат.")
 
-    return render_template('chat.html', chat_data=chat_data)
+        return render_template('chat.html', chat_data=chat_data)
 
+    except Exception as e:
+        logging.error(f"Error processing download_chat request: {e}")
+        # Возвращаем ошибку в виде HTTP 500 Internal Server Error
+        return "Internal Server Error", 500
+'''
+@app.route('/download_chat', methods=['POST'])
+def download_chat():
+    try:
+        vod_id = request.form['vod_id']
+        logging.info(f"Received request to download chat for VOD ID: {vod_id}")
+
+        #chat_data = get_full_chat(vod_id)
+
+        #if chat_data is None:
+            #return "Unable to download chat data", 500
+
+        #logging.info("Chat downloaded successfully")
+
+        return render_template('chat.html')#, chat_data=chat_data)
+
+    except Exception as e:
+        logging.error(f"Error processing download_chat request: {e}")
+        # Возвращаем ошибку в виде HTTP 500 Internal Server Error
+        return "Internal Server Error", 500'''
 
 @app.route('/get_info', methods=['POST'])
 def get_info():
