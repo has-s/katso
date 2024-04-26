@@ -110,22 +110,6 @@ def download_chat(stream_id: int):
     subprocess.run(
         ["../TwitchDownloaderCLI", "chatdownload", "--id", str(stream_id), "--output", "chat.json"])
     return json.load(open("chat.json", "r").read())
-
-def download_chat(stream_id: int):
-    try:
-        subprocess.run(["/путь/до/файла/TwitchDownloaderCLI",
-                        "chatdownload",
-                        "--id", str(stream_id),
-                        "--output", "chat.json"],
-                       check=True)
-        with open("chat.json", "r") as chat_file:
-            chat_data = json.load(chat_file)
-        return chat_data
-    except subprocess.CalledProcessError as e:
-        print("Произошла ошибка при загрузке чата:", e)
-        return None
-
-
 def get_user_info(access_token, username):
     url = f"https://api.twitch.tv/helix/users?login={username}"
     headers = {
