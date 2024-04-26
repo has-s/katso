@@ -7,6 +7,8 @@ import datetime
 import os
 import re
 
+import concurrent.futures
+
 load_dotenv()
 client_id = os.getenv("CLIENT_ID")
 client_secret = os.getenv("CLIENT_SECRET")
@@ -219,6 +221,9 @@ def flatten_chat(chat_filt):
     return flattened_chat
 
 
+import concurrent.futures
+import logging
+
 def get_full_chat(vod_id):
     try:
         access_token = authenticate_oauth(client_id, client_secret)
@@ -233,36 +238,58 @@ def get_full_chat(vod_id):
 
         chat_downloader = ChatDownloader(download_options)
 
-        # Получаем данные чата
-        chat_filt = []
-        last_stamp = 0
-        chat_data = get_chat_from(chat_downloader, last_stamp)
-
         # Получаем время начала стрима
         stream_start_time = convert_time_format(created_at)
         stream_duration = duration_to_seconds(duration)
 
-        delta = int(calculate_delta(stream_start_time, get_last_message_timestamp(chat_data)))
+        chat_parts = []
+        with concurrent.futures.ThreadPoolExecutor(max_workers=128) as executor:
+            futures = []
+            for i in range(16):
+                start_percent = i * 6.25
+                end_percent = (i + 1) * 6.25 if i < 15 else 100
+                start_time = (start_percent / 100) * stream_duration
+                end_time = (end_percent / 100) * stream_duration
+                delta_start = int(start_time)
+                delta_end = int(end_time)
+                futures.append(
+                    executor.submit(
+                        get_chat_segment,
+                        chat_downloader,
+                        delta_start,
+                        delta_end,
+                        vod_id
+                    )
+                )
+            for future in concurrent.futures.as_completed(futures):
+                chat_parts.append(future.result())
 
-        chat_filt = filter_chat_data(chat_data)
-        # Загружаем часть чата, начиная с текущей временной дельты
-        chat_data = get_chat_from(chat_downloader, delta)
-        last_stamp = + delta
-        # Загружаем чат по частям, начиная с начала стрима
-        chat_filt.extend(filter_chat_data(chat_data))
-        while last_stamp <= stream_duration:
-            chat_part = get_chat_from(chat_downloader, last_stamp)
-            glmt = get_last_message_timestamp(chat_part)
-            strsttime = stream_start_time
-            last_stamp = int(calculate_delta(strsttime, glmt))
-            chat_filt.extend(filter_chat_data(chat_data))
-            logging.info(f"Timestamp {last_stamp}")
+        # Слияние всех частей чата в один массив
+        full_chat = []
+        for part in chat_parts:
+            full_chat.extend(part)
+
         logging.info("Chat downloaded successfully")
-        return flatten_chat(chat_filt)
+        return flatten_chat(full_chat)
 
     except Exception as e:
         logging.error(f"Error processing download_chat request: {e}")
         return None
+
+def get_chat_segment(chat_downloader, start_delta, end_delta, vod_id):
+    chat_data = get_chat_from(chat_downloader, start_delta)
+    chat_filt = filter_chat_data(chat_data)
+    last_stamp = start_delta
+    while last_stamp < end_delta:
+        chat_part = get_chat_from(chat_downloader, last_stamp)
+        glmt = get_last_message_timestamp(chat_part)
+        start, duration = get_stream_info(access_token, vod_id)
+        strsttime = convert_time_format(start)
+        last_stamp = int(calculate_delta(strsttime, glmt))
+        chat_filt.extend(filter_chat_data(chat_data))
+        logging.info(f"Timestamp {last_stamp}")
+    return chat_filt
+
 
 
 def convert_time_format(time_str, from_format="%Y-%m-%dT%H:%M:%SZ", to_format="%Y-%m-%d %H:%M:%S.%f"):
@@ -356,15 +383,10 @@ def download_chat():
     try:
         vod_id = request.form['vod_id']
         logging.info(f"Received request to download chat for VOD ID: {vod_id}")
-
         chat_data = get_full_chat(vod_id)
-
-        if chat_data is None:
-            return "Unable to download chat data", 500
-
         logging.info("Chat downloaded successfully")
 
-        return render_template('chat.html', chat_data=chat_data)
+        return render_template('chat.html')
 
     except Exception as e:
         logging.error(f"Error processing download_chat request: {e}")
