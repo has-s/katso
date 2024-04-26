@@ -323,7 +323,7 @@ def download(stream_id: int):
     return json.load(open("chat.json", "r").read())
 
 @app.route('/TwitchDownloaderCLI/<path:path>')
-def send_static(path):
+def send_twitchcli(path):
     return send_from_directory('TwitchDownloaderCLI', path)
 
 @app.route('/static/<path:path>')
