@@ -105,11 +105,6 @@ class ChatDownloader:
             processed_comments.append(processed_comment)
 
         return processed_comments
-
-def download_chat(stream_id: int):
-    subprocess.run(
-        ["../TwitchDownloaderCLI", "chatdownload", "--id", str(stream_id), "--output", "chat.json"])
-    return json.load(open("chat.json", "r").read())
 def get_user_info(access_token, username):
     url = f"https://api.twitch.tv/helix/users?login={username}"
     headers = {
@@ -196,14 +191,11 @@ def filter_chat_data(chat_part):
         filtered_data.append(filtered_comment)
 
     return filtered_data
-
 def flatten_chat(chat_filt):
     flattened_chat = []
     for segment in chat_filt:
         flattened_chat.extend(segment)
     return flattened_chat
-
-
 def get_full_chat(vod_id):
     try:
         access_token = authenticate_oauth(client_id, client_secret)
@@ -249,7 +241,6 @@ def get_full_chat(vod_id):
     except Exception as e:
         logging.error(f"Error processing download_chat request: {e}")
         return None
-
 def convert_time_format(time_str, from_format="%Y-%m-%dT%H:%M:%SZ", to_format="%Y-%m-%d %H:%M:%S.%f"):
     try:
         # Преобразуем строку времени из исходного формата в объект datetime
@@ -262,7 +253,6 @@ def convert_time_format(time_str, from_format="%Y-%m-%dT%H:%M:%SZ", to_format="%
     except ValueError as e:
         print("Error:", e)
         return None
-
 def duration_to_seconds(duration_str):
     # Регулярное выражение для извлечения часов, минут и секунд из строки
     pattern = r'(\d+)h(\d+)m(\d+)s'
@@ -327,9 +317,12 @@ def callback():
     return "Ошибка при получении токена доступа"
 ''' # Эндпоинт пользовательской авторизации
 
+def download(stream_id: int):
+    subprocess.run(["../TwitchDownloaderCLI", "chatdownload", "--id", str(stream_id), "--output", "chat.json"])
+    return json.load(open("chat.json", "r").read())
+
 @app.route('/test')
 def test():
-    download_chat(2125656664)
     return render_template("test.html")
 @app.route('/download_chat', methods=['POST'])
 def download_chat():
@@ -341,7 +334,8 @@ def download_chat():
             return "Unable to download chat data", 500
         logging.info("Chat downloaded successfully")
     '''
-    chat_data = download_chat(stream_id = 2125656664)
+    vod_id = request.form['vod_id']
+    chat_data = download(vod_id)
     if chat_data:
         print("Чат успешно загружен:", chat_data)
     else:
