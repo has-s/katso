@@ -2,10 +2,7 @@
   "rewrites": [
     { "source": "/(.*)", "destination": "/api/index" },
     { "source": "/templates/(.*)", "destination": "../templates/" },
-    { "source": "/TwitchDownloaderCLI/(.*)", "destination": "../TwitchDownloaderCLI/" }
-  ],
-  "routes": [
-    { "handle": "filesystem", "src": "/static/(.*)" }
+    { "source": "/static/(.*)", "destination": "../static/" }
   ]
 }
 
