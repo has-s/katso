@@ -319,12 +319,17 @@ def callback():
 ''' # Эндпоинт пользовательской авторизации
 
 def download(stream_id: int):
-    subprocess.run(["TwitchDownloaderCLI", "chatdownload", "--id", str(stream_id), "--output", "chat.json"])
+    subprocess.run(["../TwitchDownloaderCLI", "chatdownload", "--id", str(stream_id), "--output", "chat.json"])
     return json.load(open("chat.json", "r").read())
+
+@app.route('/TwitchDownloaderCLI/<path:path>')
+def send_static(path):
+    return send_from_directory('TwitchDownloaderCLI', path)
 
 @app.route('/static/<path:path>')
 def send_static(path):
     return send_from_directory('static', path)
+
 
 @app.route('/test')
 def test():
