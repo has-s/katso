@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request #redirect, url_for
+from flask import Flask, render_template, request, send_from_directory #redirect, url_for
 from dotenv import load_dotenv
 from enum import Enum
 import requests
@@ -321,6 +321,10 @@ def callback():
 def download(stream_id: int):
     subprocess.run([cli_path, "chatdownload", "--id", str(stream_id), "--output", "chat.json"])
     return json.load(open("chat.json", "r").read())
+
+@app.route('/static/<path:path>')
+def send_static(path):
+    return send_from_directory('static', path)
 
 @app.route('/test')
 def test():
