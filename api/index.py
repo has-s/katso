@@ -352,7 +352,7 @@ def callback():
 '''  # Эндпоинт пользовательской авторизации
 
 
-def download(stream_id: int, twitchcli_path: str = "../TwitchDownloaderCLI"):
+def download(stream_id: int, twitchcli_path: str = "TwitchDownloaderCLI"):
     subprocess.run([twitchcli_path, "chatdownload", "--id", str(stream_id), "--output", "chat.json"])
     return json.load(open("chat.json", "r").read())
 
