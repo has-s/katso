@@ -1,14 +1,13 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request #redirect, url_for
 from dotenv import load_dotenv
 from enum import Enum
 import requests
 import logging
 import datetime
+import subprocess
+import json
 import os
 import re
-import json
-
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 load_dotenv()
 client_id = os.getenv("CLIENT_ID")
@@ -17,6 +16,23 @@ template_path = os.getenv("TEMPLATE_PATH")
 redirect_uri = os.getenv("REDIRECT_URI")
 
 app = Flask(__name__, template_folder=template_path)
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+
+# Аунтефикация приложения
+def authenticate_oauth(client_id, client_secret):
+    token_url = "https://id.twitch.tv/oauth2/token"
+    params = {
+        "client_id": client_id,
+        "client_secret": client_secret,
+        "grant_type": "client_credentials"
+    }
+    response = requests.post(token_url, data=params)
+    if response.status_code == 200:
+        data = response.json()
+        if 'access_token' in data:
+            return data['access_token']
+    return None
+access_token = authenticate_oauth(client_id, client_secret)
 
 # Определяем классы для формата чата и типа загрузки
 class ChatFormat(Enum):
@@ -25,7 +41,6 @@ class ChatFormat(Enum):
     TEXT = "txt"
 class DownloadType(Enum):
     VIDEO = 1
-    CLIP = 2
 class DownloadOptions:
     def __init__(self, download_type, video_id, download_format, video_start=None):
         self.download_type = download_type
@@ -57,17 +72,14 @@ class ChatDownloader:
                     }
                 }
             }
-        else:
-            # Здесь может быть реализация для получения данных клипа
-            pass
 
-        try:
-            response = requests.post(url, headers=headers, json=payload)
-            response.raise_for_status()
-            return response.json()
-        except requests.RequestException as e:
-            print(f"Error fetching chat data: {e}")
-            return None
+            try:
+                response = requests.post(url, headers=headers, json=payload)
+                response.raise_for_status()
+                return response.json()
+            except requests.RequestException as e:
+                print(f"Error fetching chat data: {e}")
+                return None
 
     def _process_chat_data(self, chat_data):
         if not chat_data:
@@ -94,34 +106,26 @@ class ChatDownloader:
 
         return processed_comments
 
-def authenticate_oauth(client_id, client_secret):
-    token_url = "https://id.twitch.tv/oauth2/token"
-    params = {
-        "client_id": client_id,
-        "client_secret": client_secret,
-        "grant_type": "client_credentials"
-    }
-    response = requests.post(token_url, data=params)
-    if response.status_code == 200:
-        data = response.json()
-        if 'access_token' in data:
-            return data['access_token']
-    return None
-def get_access_token(code):
-    token_url = "https://id.twitch.tv/oauth2/token"
-    params = {
-        "client_id": client_id,
-        "client_secret": client_secret,
-        "code": code,
-        "grant_type": "authorization_code",
-        "redirect_uri": redirect_uri
-    }
-    response = requests.post(token_url, data=params)
-    if response.status_code == 200:
-        data = response.json()
-        if 'access_token' in data:
-            return data['access_token']
-    return None
+def download_chat(stream_id: int):
+    subprocess.run(
+        ["../TwitchDownloaderCLI", "chatdownload", "--id", str(stream_id), "--output", "chat.json"])
+    return json.load(open("chat.json", "r").read())
+
+def download_chat(stream_id: int):
+    try:
+        subprocess.run(["/путь/до/файла/TwitchDownloaderCLI",
+                        "chatdownload",
+                        "--id", str(stream_id),
+                        "--output", "chat.json"],
+                       check=True)
+        with open("chat.json", "r") as chat_file:
+            chat_data = json.load(chat_file)
+        return chat_data
+    except subprocess.CalledProcessError as e:
+        print("Произошла ошибка при загрузке чата:", e)
+        return None
+
+
 def get_user_info(access_token, username):
     url = f"https://api.twitch.tv/helix/users?login={username}"
     headers = {
@@ -133,18 +137,7 @@ def get_user_info(access_token, username):
         data = response.json()
         return data['data'][0] if 'data' in data and len(data['data']) > 0 else None
     return None
-def get_stream_info(access_token, username):
-    url = f"https://api.twitch.tv/helix/streams?user_login={username}"
-    headers = {
-        "Authorization": f"Bearer {access_token}",
-        "Client-ID": client_id
-    }
-    response = requests.get(url, headers=headers)
-    if response.status_code == 200:
-        data = response.json()
-        return data['data'][0] if 'data' in data and len(data['data']) > 0 else None
-    return None
-def get_stream_start(access_token, vod_id):
+def get_stream_info(access_token, vod_id):
     url = f"https://api.twitch.tv/helix/videos?id={vod_id}"
     headers = {
         "Authorization": f"Bearer {access_token}",
@@ -153,19 +146,9 @@ def get_stream_start(access_token, vod_id):
     response = requests.get(url, headers=headers)
     if response.status_code == 200:
         data = response.json()
-        return data['data'][0]['created_at'] if 'data' in data and len(data['data']) > 0 else None
-    return None
-def get_stream_duration(access_token, vod_id):
-    url = f"https://api.twitch.tv/helix/videos?id={vod_id}"
-    headers = {
-        "Authorization": f"Bearer {access_token}",
-        "Client-ID": client_id
-    }
-    response = requests.get(url, headers=headers)
-    if response.status_code == 200:
-        data = response.json()
-        return data['data'][0]['duration'] if 'data' in data and len(data['data']) > 0 else None
-    return None
+        if 'data' in data and len(data['data']) > 0:
+            return data['data'][0]['created_at'], data['data'][0]['duration']
+    return None, None
 def get_past_streams(access_token, user_id, limit=10):
     url = f"https://api.twitch.tv/helix/videos?user_id={user_id}&type=archive&first={limit}"
     headers = {
@@ -206,8 +189,6 @@ def get_last_message_timestamp(chat_data):
             last_message_timestamp = last_message_timestamp.replace('T', ' ').replace('Z', '')
 
     return last_message_timestamp
-
-
 def filter_chat_data(chat_part):
     # Создаем список для хранения отфильтрованных данных
     filtered_data = []
@@ -242,6 +223,7 @@ def flatten_chat(chat_filt):
 def get_full_chat(vod_id):
     try:
         access_token = authenticate_oauth(client_id, client_secret)
+        created_at, duration = get_stream_info(access_token, vod_id)
         logging.info(f"Received request to download chat for VOD ID: {vod_id}")
 
         download_options = DownloadOptions(
@@ -258,8 +240,8 @@ def get_full_chat(vod_id):
         chat_data = get_chat_from(chat_downloader, last_stamp)
 
         # Получаем время начала стрима
-        stream_start_time = convert_time_format(get_stream_start(access_token, vod_id))
-        stream_duration = duration_to_seconds(get_stream_duration(access_token, vod_id))
+        stream_start_time = convert_time_format(created_at)
+        stream_duration = duration_to_seconds(duration)
 
         delta = int(calculate_delta(stream_start_time, get_last_message_timestamp(chat_data)))
 
@@ -283,8 +265,6 @@ def get_full_chat(vod_id):
     except Exception as e:
         logging.error(f"Error processing download_chat request: {e}")
         return None
-
-
 
 def convert_time_format(time_str, from_format="%Y-%m-%dT%H:%M:%SZ", to_format="%Y-%m-%d %H:%M:%S.%f"):
     try:
@@ -329,29 +309,22 @@ def calculate_delta(time_str1, time_str2):
         print("Error:", e)
         return None
 
-@app.route('/test')
-def test():
-    return render_template("test.html")
-@app.route('/download_chat', methods=['POST'])
-def download_chat():
-    try:
-        access_token = authenticate_oauth(client_id, client_secret)
-        vod_id = request.form['vod_id']
-        logging.info(f"Received request to download chat for VOD ID: {vod_id}")
-
-        chat_data = get_full_chat(vod_id)
-
-        if chat_data is None:
-            return "Unable to download chat data", 500
-
-        logging.info("Chat downloaded successfully")
-
-        return render_template('chat.html', chat_data=chat_data)
-
-    except Exception as e:
-        logging.error(f"Error processing download_chat request: {e}")
-        # Возвращаем ошибку в виде HTTP 500 Internal Server Error
-        return "Internal Server Error", 500
+'''    
+def get_access_token(code):
+    token_url = "https://id.twitch.tv/oauth2/token"
+    params = {
+        "client_id": client_id,
+        "client_secret": client_secret,
+        "code": code,
+        "grant_type": "authorization_code",
+        "redirect_uri": redirect_uri
+    }
+    response = requests.post(token_url, data=params)
+    if response.status_code == 200:
+        data = response.json()
+        if 'access_token' in data:
+            return data['access_token']
+    return None
 
 # Эндпоинт для авторизации
 @app.route('/authorize')
@@ -368,9 +341,31 @@ def callback():
         if access_token:
             return redirect(url_for('chat_messages', access_token=access_token))
     return "Ошибка при получении токена доступа"
+''' # Эндпоинт пользовательской авторизации
+
+@app.route('/test')
+def test():
+    download_chat(2125656664)
+    return render_template("test.html")
+@app.route('/download_chat', methods=['POST'])
+def download_chat():
+    '''
+        vod_id = request.form['vod_id']
+        logging.info(f"Received request to download chat for VOD ID: {vod_id}")
+        chat_data = get_full_chat(vod_id)
+        if chat_data is None:
+            return "Unable to download chat data", 500
+        logging.info("Chat downloaded successfully")
+    '''
+    chat_data = download_chat(stream_id = 2125656664)
+    if chat_data:
+        print("Чат успешно загружен:", chat_data)
+    else:
+        print("Не удалось загрузить чат.")
+
+    return render_template('chat.html', chat_data=chat_data)
 @app.route('/get_info', methods=['POST'])
 def get_info():
-    access_token = authenticate_oauth(client_id, client_secret)
     if access_token:
         username = request.form.get('username')
         if not username:
@@ -379,16 +374,16 @@ def get_info():
         if user_info:
             stream_info = get_stream_info(access_token, username)
             past_streams = get_past_streams(access_token, user_info['id'])
-            return render_template('main_info.html', user_info=user_info, stream_info=stream_info, past_streams=past_streams)
+            return render_template('main_info.html', user_info=user_info, stream_info=stream_info,
+                                   past_streams=past_streams)
         else:
             return "Пользователь не найден"
     else:
         return "Не удалось получить Bearer токен доступа."
-
 @app.route('/')
 def index():
     return render_template("index.html")
 
 if __name__ == "__main__":
-    app.run( host='0.0.0.0', port=5001, debug=True )
+    app.run(host='0.0.0.0', port=5001, debug=True)
 #
