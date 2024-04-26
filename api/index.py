@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, send_from_directory #redirect, url_for
+from flask import Flask, render_template, request, send_from_directory  # redirect, url_for
 from dotenv import load_dotenv
 from enum import Enum
 import requests
@@ -19,6 +19,7 @@ cli_path = os.getenv("CLI_PATH")
 app = Flask(__name__, template_folder=template_path)
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
+
 # Аунтефикация приложения
 def authenticate_oauth(client_id, client_secret):
     token_url = "https://id.twitch.tv/oauth2/token"
@@ -33,21 +34,30 @@ def authenticate_oauth(client_id, client_secret):
         if 'access_token' in data:
             return data['access_token']
     return None
+
+
 access_token = authenticate_oauth(client_id, client_secret)
+
 
 # Определяем классы для формата чата и типа загрузки
 class ChatFormat(Enum):
     JSON = "json"
     HTML = "html"
     TEXT = "txt"
+
+
 class DownloadType(Enum):
     VIDEO = 1
+
+
 class DownloadOptions:
     def __init__(self, download_type, video_id, download_format, video_start=None):
         self.download_type = download_type
         self.video_id = video_id
         self.download_format = download_format
         self.video_start = video_start
+
+
 class ChatDownloader:
     def __init__(self, download_options):
         self.download_options = download_options
@@ -99,13 +109,16 @@ class ChatDownloader:
                     'name': comment['node']['commenter']['login']
                 },
                 'message': {
-                    'body': "".join([fragment['text'] for fragment in comment['node']['message']['fragments'] if fragment['text']]),
+                    'body': "".join(
+                        [fragment['text'] for fragment in comment['node']['message']['fragments'] if fragment['text']]),
                     'user_color': comment['node']['message']['userColor']
                 }
             }
             processed_comments.append(processed_comment)
 
         return processed_comments
+
+
 def get_user_info(access_token, username):
     url = f"https://api.twitch.tv/helix/users?login={username}"
     headers = {
@@ -117,6 +130,8 @@ def get_user_info(access_token, username):
         data = response.json()
         return data['data'][0] if 'data' in data and len(data['data']) > 0 else None
     return None
+
+
 def get_stream_info(access_token, vod_id):
     url = f"https://api.twitch.tv/helix/videos?id={vod_id}"
     headers = {
@@ -129,6 +144,8 @@ def get_stream_info(access_token, vod_id):
         if 'data' in data and len(data['data']) > 0:
             return data['data'][0]['created_at'], data['data'][0]['duration']
     return None, None
+
+
 def get_past_streams(access_token, user_id, limit=10):
     url = f"https://api.twitch.tv/helix/videos?user_id={user_id}&type=archive&first={limit}"
     headers = {
@@ -140,6 +157,8 @@ def get_past_streams(access_token, user_id, limit=10):
         data = response.json()
         return data['data'] if 'data' in data else None
     return None
+
+
 def get_chat_from(chat_downloader, timestamp):
     try:
         # Устанавливаем временную метку начала загрузки чата
@@ -153,6 +172,8 @@ def get_chat_from(chat_downloader, timestamp):
     except Exception as e:
         print(f"Error fetching chat data: {e}")
         return None
+
+
 def get_last_message_timestamp(chat_data):
     last_message_timestamp = None
 
@@ -169,6 +190,8 @@ def get_last_message_timestamp(chat_data):
             last_message_timestamp = last_message_timestamp.replace('T', ' ').replace('Z', '')
 
     return last_message_timestamp
+
+
 def filter_chat_data(chat_part):
     # Создаем список для хранения отфильтрованных данных
     filtered_data = []
@@ -192,11 +215,15 @@ def filter_chat_data(chat_part):
         filtered_data.append(filtered_comment)
 
     return filtered_data
+
+
 def flatten_chat(chat_filt):
     flattened_chat = []
     for segment in chat_filt:
         flattened_chat.extend(segment)
     return flattened_chat
+
+
 def get_full_chat(vod_id):
     try:
         access_token = authenticate_oauth(client_id, client_secret)
@@ -229,11 +256,10 @@ def get_full_chat(vod_id):
         # Загружаем чат по частям, начиная с начала стрима
         chat_filt.extend(filter_chat_data(chat_data))
         while last_stamp <= stream_duration:
-
             chat_part = get_chat_from(chat_downloader, last_stamp)
             glmt = get_last_message_timestamp(chat_part)
             strsttime = stream_start_time
-            last_stamp = int(calculate_delta(strsttime ,glmt))
+            last_stamp = int(calculate_delta(strsttime, glmt))
             chat_filt.extend(filter_chat_data(chat_data))
             logging.info(f"Timestamp {last_stamp}")
         logging.info("Chat downloaded successfully")
@@ -242,6 +268,8 @@ def get_full_chat(vod_id):
     except Exception as e:
         logging.error(f"Error processing download_chat request: {e}")
         return None
+
+
 def convert_time_format(time_str, from_format="%Y-%m-%dT%H:%M:%SZ", to_format="%Y-%m-%d %H:%M:%S.%f"):
     try:
         # Преобразуем строку времени из исходного формата в объект datetime
@@ -254,6 +282,8 @@ def convert_time_format(time_str, from_format="%Y-%m-%dT%H:%M:%SZ", to_format="%
     except ValueError as e:
         print("Error:", e)
         return None
+
+
 def duration_to_seconds(duration_str):
     # Регулярное выражение для извлечения часов, минут и секунд из строки
     pattern = r'(\d+)h(\d+)m(\d+)s'
@@ -270,6 +300,8 @@ def duration_to_seconds(duration_str):
         return total_seconds
     else:
         return None
+
+
 def calculate_delta(time_str1, time_str2):
     try:
         # Преобразуем строки в объекты datetime
@@ -283,6 +315,7 @@ def calculate_delta(time_str1, time_str2):
     except ValueError as e:
         print("Error:", e)
         return None
+
 
 '''    
 def get_access_token(code):
@@ -316,15 +349,18 @@ def callback():
         if access_token:
             return redirect(url_for('chat_messages', access_token=access_token))
     return "Ошибка при получении токена доступа"
-''' # Эндпоинт пользовательской авторизации
+'''  # Эндпоинт пользовательской авторизации
 
-def download(stream_id: int):
-    subprocess.run([send_twitchcli, "chatdownload", "--id", str(stream_id), "--output", "chat.json"])
+
+def download(stream_id: int, twitchcli_path: str = "../TwitchDownloaderCLI"):
+    subprocess.run([twitchcli_path, "chatdownload", "--id", str(stream_id), "--output", "chat.json"])
     return json.load(open("chat.json", "r").read())
+
 
 @app.route('/TwitchDownloaderCLI/<path:path>')
 def send_twitchcli(path):
     return send_from_directory('TwitchDownloaderCLI', path)
+
 
 @app.route('/static/<path:path>')
 def send_static(path):
@@ -334,6 +370,8 @@ def send_static(path):
 @app.route('/test')
 def test():
     return render_template("test.html")
+
+
 @app.route('/download_chat', methods=['POST'])
 def download_chat():
     '''
@@ -352,6 +390,8 @@ def download_chat():
         print("Не удалось загрузить чат.")
 
     return render_template('chat.html', chat_data=chat_data)
+
+
 @app.route('/get_info', methods=['POST'])
 def get_info():
     if access_token:
@@ -368,9 +408,12 @@ def get_info():
             return "Пользователь не найден"
     else:
         return "Не удалось получить Bearer токен доступа."
+
+
 @app.route('/')
 def index():
     return render_template("index.html")
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5001, debug=True)
