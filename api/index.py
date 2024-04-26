@@ -4,7 +4,6 @@ from enum import Enum
 import requests
 import logging
 import datetime
-import jsonify
 import os
 import re
 
