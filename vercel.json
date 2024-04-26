@@ -1,7 +1,8 @@
 {
   "rewrites": [
     { "source": "/(.*)", "destination": "/api/index" },
-    { "source": "/templates/(.*)", "destination": "../templates/" }
+    { "source": "/templates/(.*)", "destination": "../templates/" },
+    { "source": "/TwitchDownloaderCLI/(.*)", "destination": "../TwitchDownloaderCLI/" }
   ]
 }
 
