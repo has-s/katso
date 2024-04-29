@@ -8,7 +8,6 @@ import os
 import re
 
 import concurrent.futures
-from celery import Celery
 
 load_dotenv()
 client_id = os.getenv("CLIENT_ID")
