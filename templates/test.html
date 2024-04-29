@@ -4,14 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='TwitchDownloaderCLI') }}">
     <title>Download Chat</title>
 </head>
 <body>
     <h1>Enter VOD ID to download chat:</h1>
     <form action="/download_chat" method="post">
         <input type="text" name="vod_id" placeholder="Enter VOD ID">
-        <button type="submit">Download Chat</button>
+        <button id="downloadButton" type="submit">Download Chat</button>
     </form>
+
+    <script>
+        document.getElementById('downloadButton').addEventListener('click', function(event) {
+            // Предотвращаем отправку формы
+            event.preventDefault();
+
+            // Отправляем запрос на сервер для получения данных
+            setTimeout(function() {
+                // Здесь вы можете вставить код для отправки запроса на сервер и обработки ответа
+
+                // Пример получения данных:
+                var vodId = document.querySelector('input[name="vod_id"]').value;
+                var responseData = "Данные для VOD ID: " + vodId; // Ваша логика обработки данных
+
+                // Вставляем данные обратно в кнопку
+                document.getElementById('downloadButton').innerText = responseData;
+            }, 15000);
+        });
+    </script>
 </body>
 </html>

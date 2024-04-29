@@ -25,44 +25,9 @@
 <body>
 <h1>Chat Data</h1>
     <div id="chatData"></div>
-
-    <script>
-        async function downloadChat(vodId) {
-            try {
-                const response = await fetch('/download_chat', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({vod_id: vodId})
-                });
-
-                if (!response.ok) {
-                    throw new Error('Unable to download chat data');
-                }
-
-                const data = await response.json();
-                console.log('Chat data:', data);
-
-            } catch (error) {
-                console.error('Error fetching chat data:', error);
-            }
-        }
-    </script>
-
     <h1>Chat</h1>
     <div id="chat">
-        {% for segment in chat_data %}
-            {% for comment in segment %}
-                <div class="comment">
-                    <div class="header">
-                        <span class="commenter">{{ comment['display_name'] }}</span> -
-                        <span class="timestamp">{{ comment['timestamp'] }}</span>
-                    </div>
-                    <div class="message">{{ comment['message_text'] }}</div>
-                </div>
-            {% endfor %}
-        {% endfor %}
+        good
     </div>
 
 </body>

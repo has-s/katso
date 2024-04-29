@@ -8,6 +8,7 @@ import os
 import re
 
 import concurrent.futures
+from celery import Celery
 
 load_dotenv()
 client_id = os.getenv("CLIENT_ID")
@@ -142,6 +143,48 @@ def get_stream_info(access_token, vod_id):
             return data['data'][0]['created_at'], data['data'][0]['duration']
     return None, None
 
+def format_duration(duration):
+    hours = duration // 3600
+    minutes = (duration % 3600) // 60
+    seconds = duration % 60
+    return f"{hours:02}:{minutes:02}:{seconds:02}"
+def get_list_tags(access_token, vod_id):
+    url = f"https://api.twitch.tv/helix/videos?id={vod_id}"
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Client-ID": client_id
+    }
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        data = response.json()
+        if 'data' in data and len(data['data']) > 0:
+            categories = get_vod_tags(access_token, vod_id)
+            if categories:
+                categories_info = ' | '.join([f"{category} [{format_duration(duration)}]" for category, duration in categories.items()])
+                return categories_info
+    return None
+
+def get_vod_tags(access_token, vod_id):
+    headers = {
+        'Authorization': f'Bearer {access_token}',
+        'Client-ID': client_id  # Замените на свой Client ID
+    }
+    params = {
+        'id': vod_id
+    }
+    url = 'https://api.twitch.tv/helix/videos/tags'
+
+    response = requests.get(url, headers=headers, params=params)
+    if response.status_code == 200:
+        data = response.json()
+        tags = data.get('data', [])
+        categories = {}
+        for tag in tags:
+            categories[tag['tag_name']] = tag['duration']
+        return categories
+    else:
+        print(f"Failed to retrieve tags. Status code: {response.status_code}")
+        return None
 
 def get_past_streams(access_token, user_id, limit=10):
     url = f"https://api.twitch.tv/helix/videos?user_id={user_id}&type=archive&first={limit}"
@@ -383,7 +426,6 @@ def download_chat():
     try:
         vod_id = request.form['vod_id']
         logging.info(f"Received request to download chat for VOD ID: {vod_id}")
-        chat_data = get_full_chat(vod_id)
         logging.info("Chat downloaded successfully")
 
         return render_template('chat.html')
