@@ -34,27 +34,20 @@ def authenticate_oauth(client_id, client_secret):
             return data['access_token']
     return None
 
-
 access_token = authenticate_oauth(client_id, client_secret)
 
 
 # Определяем классы для формата чата и типа загрузки
 class ChatFormat(Enum):
     JSON = "json"
-
-
 class DownloadType(Enum):
     VIDEO = 1
-
-
 class DownloadOptions:
     def __init__(self, download_type, video_id, download_format, video_start=None):
         self.download_type = download_type
         self.video_id = video_id
         self.download_format = download_format
         self.video_start = video_start
-
-
 class ChatDownloader:
     def __init__(self, download_options):
         self.download_options = download_options
@@ -115,7 +108,6 @@ class ChatDownloader:
 
         return processed_comments
 
-
 def get_user_info(access_token, username):
     url = f"https://api.twitch.tv/helix/users?login={username}"
     headers = {
@@ -128,7 +120,7 @@ def get_user_info(access_token, username):
         return data['data'][0] if 'data' in data and len(data['data']) > 0 else None
     return None
 
-
+import requests
 def get_stream_info(access_token, vod_id):
     url = f"https://api.twitch.tv/helix/videos?id={vod_id}"
     headers = {
@@ -142,12 +134,7 @@ def get_stream_info(access_token, vod_id):
             return data['data'][0]['created_at'], data['data'][0]['duration']
     return None, None
 
-def format_duration(duration):
-    hours = duration // 3600
-    minutes = (duration % 3600) // 60
-    seconds = duration % 60
-    return f"{hours:02}:{minutes:02}:{seconds:02}"
-def get_list_tags(access_token, vod_id):
+def get_stream_full_info(access_token, vod_id):
     url = f"https://api.twitch.tv/helix/videos?id={vod_id}"
     headers = {
         "Authorization": f"Bearer {access_token}",
@@ -157,32 +144,25 @@ def get_list_tags(access_token, vod_id):
     if response.status_code == 200:
         data = response.json()
         if 'data' in data and len(data['data']) > 0:
-            categories = get_vod_tags(access_token, vod_id)
-            if categories:
-                categories_info = ' | '.join([f"{category} [{format_duration(duration)}]" for category, duration in categories.items()])
-                return categories_info
+            return data['data'][0]  # Возвращаем только первый элемент данных
     return None
-
-def get_vod_tags(access_token, vod_id):
+def get_channel_info(access_token, broadcaster_id):
+    url = "https://api.twitch.tv/helix/channels"
     headers = {
-        'Authorization': f'Bearer {access_token}',
-        'Client-ID': client_id  # Замените на свой Client ID
+        "Authorization": f"Bearer {access_token}",
+        "Client-ID": client_id  # Замените на свой Client ID
     }
     params = {
-        'id': vod_id
+        "broadcaster_id": broadcaster_id
     }
-    url = 'https://api.twitch.tv/helix/videos/tags'
 
     response = requests.get(url, headers=headers, params=params)
+
     if response.status_code == 200:
         data = response.json()
-        tags = data.get('data', [])
-        categories = {}
-        for tag in tags:
-            categories[tag['tag_name']] = tag['duration']
-        return categories
+        return data.get('data', None)
     else:
-        print(f"Failed to retrieve tags. Status code: {response.status_code}")
+        print(f"Failed to retrieve channel info. Status code: {response.status_code}")
         return None
 
 def get_past_streams(access_token, user_id, limit=10):
@@ -229,7 +209,6 @@ def get_last_message_timestamp(chat_data):
             last_message_timestamp = last_message_timestamp.replace('T', ' ').replace('Z', '')
 
     return last_message_timestamp
-
 
 def filter_chat_data(chat_part):
     # Создаем список для хранения отфильтрованных данных
@@ -346,7 +325,11 @@ def convert_time_format(time_str, from_format="%Y-%m-%dT%H:%M:%SZ", to_format="%
     except ValueError as e:
         print("Error:", e)
         return None
-
+def format_duration(duration):
+    hours = duration // 3600
+    minutes = (duration % 3600) // 60
+    seconds = duration % 60
+    return f"{hours:02}:{minutes:02}:{seconds:02}"
 
 def duration_to_seconds(duration_str):
     # Регулярное выражение для извлечения часов, минут и секунд из строки
@@ -419,6 +402,25 @@ def callback():
 @app.route('/test')
 def test():
     return render_template("test.html")
+@app.route('/get_tags', methods=['POST'])
+def tags():
+    try:
+        broadcaster_id = request.form['broadcaster_id']
+        logging.info(f"Received request to get tags for broadcaster ID: {broadcaster_id}")
+        channel_info = get_channel_info(access_token, broadcaster_id)
+
+        if channel_info:
+            tags = get_channel_info(access_token, broadcaster_id)
+            logging.info("Tags retrieved successfully")
+            return render_template('get_tags.html', tags=tags)
+        else:
+            logging.error("Failed to retrieve channel info")
+            return "Failed to retrieve channel info", 500
+
+    except Exception as e:
+        logging.error(f"Error processing get_tags request: {e}")
+        # Возвращаем ошибку в виде HTTP 500 Internal Server Error
+        return "Internal Server Error", 500
 
 @app.route('/download_chat', methods=['POST'])
 def download_chat():
@@ -454,6 +456,7 @@ def download_chat():
         # Возвращаем ошибку в виде HTTP 500 Internal Server Error
         return "Internal Server Error", 500'''
 
+
 @app.route('/get_info', methods=['POST'])
 def get_info():
     if access_token:
@@ -470,8 +473,6 @@ def get_info():
             return "Пользователь не найден"
     else:
         return "Не удалось получить Bearer токен доступа."
-
-
 @app.route('/')
 def index():
     return render_template("index.html")

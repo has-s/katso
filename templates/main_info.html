@@ -40,25 +40,21 @@
 
 <h2>Информация о стриме:</h2>
 
-{% if stream_info %}
+{% if stream_info and stream_info.started_at %}
     <p>Стрим активен: Да</p>
     <p>Название стрима: {{ stream_info.title }}</p>
     <p>Начало стрима: {{ stream_info.started_at }}</p>
-    <p>Конец стрима: {{ stream_info.ended_at }}</p>
+    {% if stream_info.ended_at %}
+        <p>Конец стрима: {{ stream_info.ended_at }}</p>
+    {% endif %}
     <p>Зрители: {{ stream_info.viewer_count }}</p>
     <p>Язык стрима: {{ stream_info.language }}</p>
-    <p>Теги стрима:
-    <!-- make tags -->
-        {% for tag in stream_info.tag_ids %}
-            {{ tag }}{% if not loop.last %}, {% endif %}
-        {% endfor %}
-        </p>
-        <p>Превью: <img src="{{ stream_info.thumbnail_url | replace('{width}', '1920') | replace('{height}', '1080') }}" alt="Thumbnail"></p>
-        <p>Текущая игра: {{ stream_info.game_name }}</p>
-        <p>Имя стримера: {{ stream_info.user_name }}</p>
-    {% else %}
-        <p>Стример сейчас не в сети.</p>
-    {% endif %}
+    <p>Превью: <img src="{{ stream_info.thumbnail_url | replace('{width}', '1920') | replace('{height}', '1080') }}" alt="Thumbnail"></p>
+    <p>Текущая игра: {{ stream_info.game_name }}</p>
+    <p>Имя стримера: {{ stream_info.user_name }}</p>
+{% else %}
+    <p>Стример сейчас не в сети.</p>
+{% endif %}
 
 <h2>Предыдущие стримы</h2>
     <ul>
@@ -71,19 +67,8 @@
                     <strong>URL:</strong> <a href="{{ stream.url }}">{{ stream.url }}</a><br>
                     <strong>Дата создания:</strong> {{ stream.created_at }}<br>
                     <strong>Длительность:</strong> {{ stream.duration }}<br>
-                    <strong>Язык:</strong> {{ stream.language }}<br>
-                    <strong>Теги:</strong>
-                    <ul>
-                        {% for tag in stream.tag_ids %}
-                            <li>{{ tag }}</li>
-                        {% endfor %}
-                    </ul>
                     <strong>Превью:</strong> <img src="{{ stream.thumbnail_url | replace('%{width}', '1920') | replace('%{height}', '1080') }}" alt="Preview"><br>
                     <strong>Количество просмотров:</strong> {{ stream.view_count }}<br>
-                    <strong>Количество комментариев (???):</strong> {{ stream.comment_count }}<br>
-                    <strong>Количество лайков (???):</strong> {{ stream.like_count }}<br>
-                    <strong>Количество дизлайков (???):</strong> {{ stream.dislike_count }}<br>
-                    <strong>Количество фолловеров (???):</strong> {{ stream.follower_count }}<br>
                 </li>
             {% endfor %}
         {% else %}
@@ -92,7 +77,39 @@
     </ul>
 
     <footer class="footer">
-
+        <a href="hass-portfolio.vercel.app"><b><・ )))><<</b></a>
     </footer>
+
 </body>
 </html>
+
+<style>
+    .avatar {
+        border-radius: 50%;
+        width: 100px; /* Задайте необходимую ширину и высоту */
+        height: 100px;
+        object-fit: cover; /* Это обеспечивает, чтобы изображение вписывалось в круг */
+    }
+    .profile-card {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 20px;
+        border: 1px solid var(--dark-background-color);
+        border-radius: 10px;
+        max-width: 500px; /* Максимальная ширина плашки */
+        margin: 0 auto; /* Центрирование плашки */
+        background-color: var(--dark-background-color);
+    }
+
+    .profile-card img.avatar {
+        border-radius: 50%;
+        width: 100px; /* Ширина и высота аватара */
+        height: 100px;
+        object-fit: cover;
+    }
+
+    .profile-info {
+        flex: 2; /* Растягиваем блок, чтобы он занимал всю доступную ширину */
+    }
+</style>

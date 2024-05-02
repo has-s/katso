@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twitch Channel Tags</title>
+</head>
+<body>
+    <div class="container">
+        <div class="stream-info">
+            <h2>Stream Info</h2>
+            <p><strong>Broadcaster:</strong> {{ broadcaster_name }}</p>
+            <p><strong>Game:</strong> {{ game_name }}</p>
+            <p><strong>Title:</strong> {{ title }}</p>
+            <p><strong>Tags:</strong></p>
+            <ul class="tag-list">
+                {% for tag in tags %}
+                    <li class="tag">{{ tag }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
