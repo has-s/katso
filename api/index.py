@@ -120,7 +120,6 @@ def get_user_info(access_token, username):
         return data['data'][0] if 'data' in data and len(data['data']) > 0 else None
     return None
 
-import requests
 def get_stream_info(access_token, vod_id):
     url = f"https://api.twitch.tv/helix/videos?id={vod_id}"
     headers = {
@@ -144,13 +143,13 @@ def get_stream_full_info(access_token, vod_id):
     if response.status_code == 200:
         data = response.json()
         if 'data' in data and len(data['data']) > 0:
-            return data['data'][0]  # Возвращаем только первый элемент данных
+            return data['data'][0]
     return None
 def get_channel_info(access_token, broadcaster_id):
     url = "https://api.twitch.tv/helix/channels"
     headers = {
         "Authorization": f"Bearer {access_token}",
-        "Client-ID": client_id  # Замените на свой Client ID
+        "Client-ID": client_id
     }
     params = {
         "broadcaster_id": broadcaster_id
@@ -402,26 +401,6 @@ def callback():
 @app.route('/test')
 def test():
     return render_template("test.html")
-@app.route('/get_tags', methods=['POST'])
-def tags():
-    try:
-        broadcaster_id = request.form['broadcaster_id']
-        logging.info(f"Received request to get tags for broadcaster ID: {broadcaster_id}")
-        channel_info = get_channel_info(access_token, broadcaster_id)
-
-        if channel_info:
-            tags = get_channel_info(access_token, broadcaster_id)
-            logging.info("Tags retrieved successfully")
-            return render_template('get_tags.html', tags=tags)
-        else:
-            logging.error("Failed to retrieve channel info")
-            return "Failed to retrieve channel info", 500
-
-    except Exception as e:
-        logging.error(f"Error processing get_tags request: {e}")
-        # Возвращаем ошибку в виде HTTP 500 Internal Server Error
-        return "Internal Server Error", 500
-
 @app.route('/download_chat', methods=['POST'])
 def download_chat():
     try:
