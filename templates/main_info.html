@@ -14,7 +14,7 @@
 <body>
 
     <header class="header">
-        <h1>Ka<span class="accent">ts</span>o.<span class="accent">ᵝ</span></h1>
+        <h1>Ka<span class="accent">ts</span>o.</h1>
         <div class="theme-switcher">
             <label class="switch">
                 <input type="checkbox" id="theme-toggle">
@@ -25,14 +25,11 @@
 
     <h2>Информация о пользователе Twitch</h2>
     {% if user_info %}
-        <p>Имя пользователя: {{ user_info.login }}</p>
         <p>Отображаемое имя: {{ user_info.display_name }}</p>
-        <p>Тип пользователя: {{ user_info.type }}</p>
         <p>Тип вещателя: {{ user_info.broadcaster_type }}</p>
         <p>Описание: {{ user_info.description }}</p>
         <p>URL изображения профиля: <img src="{{ user_info.profile_image_url }}" alt="Profile Image"></p>
         <p>URL изображения в оффлайне: <img src="{{ user_info.offline_image_url }}" alt="Offline Image"></p>
-        <p>Количество просмотров (устарело): {{ user_info.view_count }}</p>
         <p>Дата создания аккаунта: {{ user_info.created_at }}</p>
     {% else %}
         <p>Не удалось получить информацию о пользователе.</p>
@@ -40,21 +37,19 @@
 
 <h2>Информация о стриме:</h2>
 
-{% if stream_info and stream_info.started_at %}
+{% if stream_info %}
     <p>Стрим активен: Да</p>
     <p>Название стрима: {{ stream_info.title }}</p>
     <p>Начало стрима: {{ stream_info.started_at }}</p>
-    {% if stream_info.ended_at %}
-        <p>Конец стрима: {{ stream_info.ended_at }}</p>
-    {% endif %}
+    <p>Конец стрима: {{ stream_info.ended_at }}</p>
     <p>Зрители: {{ stream_info.viewer_count }}</p>
     <p>Язык стрима: {{ stream_info.language }}</p>
-    <p>Превью: <img src="{{ stream_info.thumbnail_url | replace('{width}', '1920') | replace('{height}', '1080') }}" alt="Thumbnail"></p>
-    <p>Текущая игра: {{ stream_info.game_name }}</p>
-    <p>Имя стримера: {{ stream_info.user_name }}</p>
-{% else %}
-    <p>Стример сейчас не в сети.</p>
-{% endif %}
+        <p>Превью: <img src="{{ stream_info.thumbnail_url | replace('{width}', '1920') | replace('{height}', '1080') }}" alt="Thumbnail"></p>
+        <p>Текущая игра: {{ stream_info.game_name }}</p>
+        <p>Имя стримера: {{ stream_info.user_name }}</p>
+    {% else %}
+        <p>Стример сейчас не в сети.</p>
+    {% endif %}
 
 <h2>Предыдущие стримы</h2>
     <ul>
@@ -63,10 +58,10 @@
                 <li>
                     <strong>Название:</strong> {{ stream.title }}<br>
                     <strong>ID:</strong> {{ stream.id }}<br>
-                    <strong>User ID:</strong> {{ stream.user_id }}<br>
                     <strong>URL:</strong> <a href="{{ stream.url }}">{{ stream.url }}</a><br>
                     <strong>Дата создания:</strong> {{ stream.created_at }}<br>
                     <strong>Длительность:</strong> {{ stream.duration }}<br>
+                    <strong>Язык:</strong> {{ stream.language }}<br>
                     <strong>Превью:</strong> <img src="{{ stream.thumbnail_url | replace('%{width}', '1920') | replace('%{height}', '1080') }}" alt="Preview"><br>
                     <strong>Количество просмотров:</strong> {{ stream.view_count }}<br>
                 </li>
@@ -77,39 +72,7 @@
     </ul>
 
     <footer class="footer">
-        <a href="hass-portfolio.vercel.app"><b><・ )))><<</b></a>
-    </footer>
 
+    </footer>
 </body>
 </html>
-
-<style>
-    .avatar {
-        border-radius: 50%;
-        width: 100px; /* Задайте необходимую ширину и высоту */
-        height: 100px;
-        object-fit: cover; /* Это обеспечивает, чтобы изображение вписывалось в круг */
-    }
-    .profile-card {
-        display: flex;
-        align-items: center;
-        gap: 20px;
-        padding: 20px;
-        border: 1px solid var(--dark-background-color);
-        border-radius: 10px;
-        max-width: 500px; /* Максимальная ширина плашки */
-        margin: 0 auto; /* Центрирование плашки */
-        background-color: var(--dark-background-color);
-    }
-
-    .profile-card img.avatar {
-        border-radius: 50%;
-        width: 100px; /* Ширина и высота аватара */
-        height: 100px;
-        object-fit: cover;
-    }
-
-    .profile-info {
-        flex: 2; /* Растягиваем блок, чтобы он занимал всю доступную ширину */
-    }
-</style>

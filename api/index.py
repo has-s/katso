@@ -120,7 +120,7 @@ def get_user_info(access_token, username):
         return data['data'][0] if 'data' in data and len(data['data']) > 0 else None
     return None
 
-def get_stream_info(access_token, vod_id):
+def get_times_stream_info(access_token, vod_id):
     url = f"https://api.twitch.tv/helix/videos?id={vod_id}"
     headers = {
         "Authorization": f"Bearer {access_token}",
@@ -132,9 +132,8 @@ def get_stream_info(access_token, vod_id):
         if 'data' in data and len(data['data']) > 0:
             return data['data'][0]['created_at'], data['data'][0]['duration']
     return None, None
-
-def get_stream_full_info(access_token, vod_id):
-    url = f"https://api.twitch.tv/helix/videos?id={vod_id}"
+def get_stream_info(access_token, username):
+    url = f"https://api.twitch.tv/helix/streams?user_login={username}"
     headers = {
         "Authorization": f"Bearer {access_token}",
         "Client-ID": client_id
@@ -142,8 +141,7 @@ def get_stream_full_info(access_token, vod_id):
     response = requests.get(url, headers=headers)
     if response.status_code == 200:
         data = response.json()
-        if 'data' in data and len(data['data']) > 0:
-            return data['data'][0]
+        return data['data'][0] if 'data' in data and len(data['data']) > 0 else None
     return None
 def get_channel_info(access_token, broadcaster_id):
     url = "https://api.twitch.tv/helix/channels"
@@ -247,7 +245,7 @@ import logging
 def get_full_chat(vod_id):
     try:
         access_token = authenticate_oauth(client_id, client_secret)
-        created_at, duration = get_stream_info(access_token, vod_id)
+        created_at, duration = get_times_stream_info(access_token, vod_id)
         logging.info(f"Received request to download chat for VOD ID: {vod_id}")
 
         download_options = DownloadOptions(
@@ -303,7 +301,7 @@ def get_chat_segment(chat_downloader, start_delta, end_delta, vod_id):
     while last_stamp < end_delta:
         chat_part = get_chat_from(chat_downloader, last_stamp)
         glmt = get_last_message_timestamp(chat_part)
-        start, duration = get_stream_info(access_token, vod_id)
+        start, duration = get_times_stream_info(access_token, vod_id)
         strsttime = convert_time_format(start)
         last_stamp = int(calculate_delta(strsttime, glmt))
         chat_filt.extend(filter_chat_data(chat_data))
@@ -438,6 +436,7 @@ def download_chat():
 
 @app.route('/get_info', methods=['POST'])
 def get_info():
+    access_token = authenticate_oauth(client_id, client_secret)
     if access_token:
         username = request.form.get('username')
         if not username:
@@ -446,12 +445,11 @@ def get_info():
         if user_info:
             stream_info = get_stream_info(access_token, username)
             past_streams = get_past_streams(access_token, user_info['id'])
-            return render_template('main_info.html', user_info=user_info, stream_info=stream_info,
-                                   past_streams=past_streams)
+            return render_template('main_info.html', user_info=user_info, stream_info=stream_info, past_streams=past_streams)
         else:
             return "Пользователь не найден"
     else:
-        return "Не удалось получить Bearer токен доступа."
+        return "Не удалось получить Bearer токен доступа. "
 @app.route('/')
 def index():
     return render_template("index.html")
