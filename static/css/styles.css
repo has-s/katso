@@ -124,10 +124,12 @@ body h2 {
 
  .accent {
     color: var(--secondary-color);
+     transition: color 0.3s ease;
 }
 
 body.dark-theme .accent {
     color: var(--primary-color);
+    transition: color 0.3s ease;
 }
 
 .content {
@@ -146,7 +148,7 @@ body.dark-theme .accent {
 body.dark-theme .footer {
     background-color: var(--dark-background-color);
     color: var(--dark-text-color);
-
+    transition: color 0.3s ease;
 }
 
 /* Медиа-запросы для адаптивного дизайна */
@@ -293,6 +295,7 @@ a {
 
 body.dark-theme a {
     color: var(--primary-color);
+    transition: color 0.3s ease;
 }
 
 .thanks {
@@ -336,6 +339,7 @@ form input[type="text"] {
     color: var(--light-text-color);
     background-color: var(--dark-text-color);
     outline: none;
+    transition: color 0.3s ease;
 }
 
 body.dark-theme form input[type="text"] {
@@ -348,6 +352,7 @@ body.dark-theme form input[type="text"] {
     color: var(--dark-text-color);
     background-color: var(--light-text-color);
     outline: none;
+    transition: color 0.3s ease;
 }
 
 /* Стили для формы */
@@ -377,6 +382,7 @@ body.dark-theme form input[type="text"] {
     width: calc(100% - 1em);
     margin-bottom: 1em;
     border-radius: 2em;
+    transition: color 0.3s ease;
 }
 
 form input[type="submit"] {
@@ -397,3 +403,146 @@ form input[type="submit"] {
 .no-wrap-text {
     white-space: nowrap;
 }
+
+.description {
+    margin: 0.5rem 0;
+}
+
+.created-at {
+    font-size: 0.9rem;
+    color: #777;
+}
+
+.broadcaster-type {
+    background-color: var(--secondary-color);
+    border-radius: 12px;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.9rem;
+    margin-left: 0.5rem;
+}
+
+body.dark-theme .broadcaster-type {
+    background-color: var(--primary-color);
+    border-radius: 12px;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.9rem;
+    margin-left: 0.5rem;
+}
+
+
+.avatar {
+    margin-right: 1rem;
+}
+
+.avatar img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.user-info, .stream-info, .past-streams {
+    margin-bottom: 2rem;
+}
+
+.nickname {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.current-stream, .offline-image-container {
+    max-width: 100%;
+    margin-top: 1rem;
+}
+
+
+.thumbnail img, .offline-image {
+    max-width: 100%;
+    width: 600px; /* Укажите желаемую ширину */
+    height: 335px; /* Укажите желаемую высоту */
+    object-fit: cover; /* Обрезать изображение до соответствия контейнеру */
+    border-radius: 20px;
+}
+
+.profile {
+    display: flex;
+    align-items: center;
+}
+
+
+
+
+
+
+
+
+
+
+.content {
+    padding: 20px;
+}
+
+.user-info, .stream-info {
+    margin-bottom: 20px;
+}
+
+.profile, .stream-info {
+    display: flex;
+    align-items: center;
+}
+
+.avatar, .thumbnail {
+    flex-shrink: 0;
+    margin-right: 20px;
+}
+
+.thumbnail img {
+    width: 640px;
+    height: auto;
+    border-radius: 8px;
+}
+
+.details, .current-stream {
+    flex-grow: 1;
+}
+
+.past-streams ul {
+    list-style: none;
+    padding: 0;
+}
+
+.past-streams li {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #ccc;
+    padding: 10px 0;
+}
+
+.past-streams li .thumbnail {
+    margin-right: 20px;
+}
+
+.past-streams li .current-stream {
+    flex-grow: 1;
+}
+
+
+
+.thumbnail {
+    float: left;
+    margin-right: 10px;
+}
+
+.current-stream {
+    overflow: hidden;
+}
+
+.past-streams li {
+    list-style: none;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 10px;
+}
+
+
+

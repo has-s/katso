@@ -53,32 +53,31 @@
 <h2>Текущий стрим</h2><br>
 <main class="content">
     <section class="stream-info">
-{% if stream_info %}
-    <div class="thumbnail">
-        <img src="{{ stream_info.thumbnail_url | replace('{width}', '1920') | replace('{height}', '1080') }}" alt="Thumbnail">
-    </div>
-{% else %}
-    <div class="offline-image-container">
-        <img src="{{ user_info.offline_image_url }}" alt="Offline Image" class="offline-image" onerror="this.src='./static/images/fallback_image.png';">
-    </div>
-{% endif %}
-        </section>
-
-    <section class="stream-info">
         {% if stream_info %}
+            <div class="thumbnail">
+                <img src="{{ stream_info.thumbnail_url | replace('{width}', '1920') | replace('{height}', '1080') }}" alt="Thumbnail">
+            </div>
             <div class="current-stream">
                 <h3><a href="https://www.twitch.tv/{{ stream_info.user_name }}">{{ stream_info.title }}</a><br></h3>
                 <p><strong>Игра</strong>: {{ stream_info.game_name }}</p>
-                <p><strong>Начало</strong>: {{ stream_info.started_at }}</p>
+                <p class="started-at" id="started-at"></p>
                 <p><strong>Зрители</strong>: {{ stream_info.viewer_count }}</p>
             </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    var startedAt = new Date("{{ stream_info.started_at }}");
+                    var options = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' };
+                    var formattedDate = startedAt.toLocaleDateString('ru-RU', options);
+                    document.getElementById('started-at').textContent = "Начало: " + formattedDate;
+                });
+            </script>
         {% else %}
             <div class="offline-image-container">
+                <img src="{{ user_info.offline_image_url }}" alt="Offline Image" class="offline-image" onerror="this.src='./static/images/fallback_image.png';">
                 <p>Стрим сейчас оффлайн</p>
             </div>
         {% endif %}
     </section>
-
 </main>
 
 <h2>Предыдущие стримы</h2><br>
@@ -86,24 +85,30 @@
     <section class="past-streams">
         <ul>
             {% if past_streams %}
-                {% for stream in past_streams %}
+                {% set past_streams_to_display = past_streams[1:] if stream_info else past_streams %}
+                {% for stream in past_streams_to_display %}
                     <li>
-                        <section class="stream-info">
+                        <div class="stream-info">
                             <div class="thumbnail">
                                 <img src="{{ stream.thumbnail_url | replace('%{width}', '1920') | replace('%{height}', '1080') }}" alt="Thumbnail">
                             </div>
-                        </section>
-
-                        <section class="stream-details">
                             <div class="current-stream">
                                 <h3><a href="{{ stream.url }}">{{ stream.title }}</a><br></h3>
                                 <p><strong>ID</strong>: {{ stream.id }}</p>
-                                <p><strong>Дата создания</strong>: {{ stream.created_at }}</p>
+                                <p class="stream-created-at" id="stream-created-at-{{ loop.index }}"></p>
                                 <p><strong>Длительность</strong>: {{ stream.duration }}</p>
                                 <p><strong>Количество просмотров</strong>: {{ stream.view_count }}</p>
                             </div>
-                        </section>
+                        </div>
                     </li>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            var createdAt{{ loop.index }} = new Date("{{ stream.created_at }}");
+                            var options{{ loop.index }} = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' };
+                            var formattedDate{{ loop.index }} = createdAt{{ loop.index }}.toLocaleDateString('ru-RU', options{{ loop.index }});
+                            document.getElementById('stream-created-at-{{ loop.index }}').textContent = "Дата создания: " + formattedDate{{ loop.index }};
+                        });
+                    </script>
                 {% endfor %}
             {% else %}
                 <li>Нет доступных предыдущих стримов.</li>
@@ -112,144 +117,9 @@
     </section>
 </main>
 
-
-
-
 <footer class="footer">
     <a href="hass-portfolio.vercel.app"><b><・ )))><<</b></a>
 </footer>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        {% for stream in past_streams %}
-            var duration{{ loop.index }} = "{{ stream.duration }}";
-            var hours{{ loop.index }} = duration{{ loop.index }}.includes('h') ? parseInt(duration{{ loop.index }}.split('h')[0]) : 0;
-            var minutes{{ loop.index }} = duration{{ loop.index }}.includes('m') ? parseInt(duration{{ loop.index }}.split('h')[1].split('m')[0]) : 0;
-            var seconds{{ loop.index }} = duration{{ loop.index }}.includes('s') ? parseInt(duration{{ loop.index }}.split('m')[1].split('s')[0]) : 0;
-
-            var formattedDuration{{ loop.index }} = '';
-            if (hours{{ loop.index }} > 0) {
-                formattedDuration{{ loop.index }} += hours{{ loop.index }} + ':';
-            }
-            if (minutes{{ loop.index }} > 0) {
-                formattedDuration{{ loop.index }} += minutes{{ loop.index }} + ':';
-            }
-            if (seconds{{ loop.index }} > 0) {
-                formattedDuration{{ loop.index }} += seconds{{ loop.index }};
-            }
-
-            document.getElementById('stream-duration-{{ loop.index }}').textContent = formattedDuration{{ loop.index }}.trim();
-
-            var createdAt{{ loop.index }} = new Date("{{ stream.created_at }}");
-            var options{{ loop.index }} = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' };
-            var formattedDate{{ loop.index }} = createdAt{{ loop.index }}.toLocaleDateString('ru-RU', options{{ loop.index }});
-            document.getElementById('stream-created-at-{{ loop.index }}').textContent = "Дата создания: " + formattedDate{{ loop.index }};
-        {% endfor %}
-    });
-</script>
-
 </body>
 </html>
-
-<style>
-.content {
-    padding: 1rem;
-}
-
-.user-info, .stream-info, .past-streams {
-    margin-bottom: 2rem;
-}
-
-.stream-info{
-    margin-bottom: 2rem;
-
-}
-
-.profile {
-    display: flex;
-    align-items: center;
-}
-
-.avatar {
-    margin-right: 1rem;
-}
-
-.avatar img {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-.details {
-    flex: 1;
-}
-
-.nickname {
-    font-size: 1.5rem;
-    font-weight: bold;
-}
-
-.broadcaster-type {
-    background-color: #eee;
-    border-radius: 12px;
-    padding: 0.2rem 0.5rem;
-    font-size: 0.9rem;
-    margin-left: 0.5rem;
-}
-
-.description {
-    margin: 0.5rem 0;
-}
-
-.created-at {
-    font-size: 0.9rem;
-    color: #777;
-}
-
-.current-stream, .offline-image-container {
-    max-width: 100%;
-    margin-top: 1rem;
-}
-
-.thumbnail img, .offline-image {
-    max-width: 100%;
-    width: 600px; /* Укажите желаемую ширину */
-    height: 335px; /* Укажите желаемую высоту */
-    object-fit: cover; /* Обрезать изображение до соответствия контейнеру */
-    border-radius: 20px;
-    box-shadow:
-        inset 0 0 10px rgba(0, 0, 0, 0.5), /* Внутренняя тень */
-        inset 0 0 20px rgba(0, 0, 0, 0.5), /* Дополнительная внутренняя тень для усиления эффекта глубины */
-        inset 0 0 30px rgba(0, 0, 0, 0.5);
-}
-
-.content {
-    max-width: var(--max-width);
-    margin: 0 auto;
-    padding: 2em;
-    display: flex;
-    flex-direction: column;
-    gap: 2em;
-}
-
-.past-streams ul {
-    list-style-type: none;
-    padding: 0;
-    display: flex;
-    flex-direction: column; /* Убедитесь, что flex-direction установлен в column */
-}
-
-.past-streams li {
-    border-bottom: 1px solid #ccc;
-    padding: 1rem 0;
-    display: flex;
-    flex-direction: column; /* Убедитесь, что flex-direction установлен в column */
-}
-
-.past-streams .stream {
-    display: flex;
-    flex-direction: column;
-}
-
-</style>
