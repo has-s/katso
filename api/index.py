@@ -368,7 +368,7 @@ def get_access_token(code):
         "client_id": client_id,
         "client_secret": client_secret,
         "code": code,
-        "grant_type": "authorization_code",
+        "grant_type": "authorization_code", 
         "redirect_uri": redirect_uri
     }
     response = requests.post(token_url, data=params)
@@ -384,7 +384,7 @@ def authorize():
     authorize_url = f"https://id.twitch.tv/oauth2/authorize?client_id={client_id}&redirect_uri={redirect_uri}&response_type=code&scope=chat:read"
     return redirect(authorize_url)
 
-# Эндпоинт для обработки редиректа после авторизации
+# Эндпоинт для обработки редиректа после авторизации    
 @app.route('/callback')
 def callback():
     code = request.args.get('code')
@@ -415,7 +415,7 @@ def download_chat():
 '''
 @app.route('/download_chat', methods=['POST'])
 def download_chat():
-    try:
+    try: 
         vod_id = request.form['vod_id']
         logging.info(f"Received request to download chat for VOD ID: {vod_id}")
 
@@ -424,7 +424,7 @@ def download_chat():
         #if chat_data is None:
             #return "Unable to download chat data", 500
 
-        #logging.info("Chat downloaded successfully")
+        #logging.info("Chat downloaded successfully") 
 
         return render_template('chat.html')#, chat_data=chat_data)
 
@@ -457,3 +457,4 @@ def index():
 
 if __name__ == "__main__":
     app.run(port=5001, debug=True)
+
